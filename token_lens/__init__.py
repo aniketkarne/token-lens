@@ -8,7 +8,7 @@ Public API:
     build_server(host, port, store) -> ThreadingHTTPServer  (web UI)
 """
 
-from __future__ import annotations
+from typing import Any
 
 from .types import (
     AnalysisReport,
@@ -19,7 +19,11 @@ from .types import (
 )
 from .analyze import analyze_file, analyze_trace
 from .report import render_html, render_svg
-from .server import build_server
+def build_server(*args: Any, **kwargs: Any) -> Any:
+    """Build the local web server with a lazy import."""
+    from .server import build_server as _build_server
+
+    return _build_server(*args, **kwargs)
 
 __all__ = [
     "AnalysisReport",
