@@ -1,0 +1,26 @@
+# Build artifacts
+/build/
+/dist/
+/*.egg-info/
+*.egg
+
+# Virtual envs
+/.venv/
+/venv/
+/env/
+
+# Cache
+__pycache__/
+*.py[cod]
+*.so
+.pytest_cache/
+.coverage
+htmlcov/
+
+# IDE
+.idea/
+.vscode/
+.DS_Store
+
+# Local report outputs (committed examples only)
+/token-lens-report.html

@@ -1,0 +1,48 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "token-lens"
+version = "0.1.0"
+description = "Offline token lens for LLM prompt zones: classify, count, score, and visualize."
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+authors = [{ name = "Aniket Karne" }]
+keywords = ["llm", "tokens", "prompt", "visualization", "rag", "context-window", "tokenization"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Operating System :: OS Independent",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Scientific/Engineering :: Information Analysis",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+]
+dependencies = [
+    "typing-extensions>=4.0.0; python_version < '3.10'",
+]
+
+[project.optional-dependencies]
+test = ["pytest>=7.0"]
+tiktoken = ["tiktoken>=0.5"]
+transformers = ["transformers>=4.30"]
+
+[project.scripts]
+token-lens = "token_lens.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/aniketkarne-com/token-lens"
+Issues = "https://github.com/aniketkarne-com/token-lens/issues"
+Repository = "https://github.com/aniketkarne-com/token-lens"
+
+[tool.setuptools]
+packages = ["token_lens"]
+
+[tool.setuptools.package-data]
+token_lens = ["py.typed"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra -q"

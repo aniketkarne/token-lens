@@ -1,0 +1,183 @@
+{
+  "model": "gpt-4o",
+  "encoder_label": "heuristic-bpe-lite",
+  "tokenizer_source": "fallback",
+  "total_tokens": 292,
+  "total_chars": 1187,
+  "message_count": 10,
+  "estimated_cost_usd": 0.00146,
+  "cost_model_label": "gpt-4o@$0.00500/1K",
+  "zones": [
+    {
+      "zone": "tool_schema",
+      "message_count": 1,
+      "token_count": 119,
+      "char_count": 323,
+      "pct_of_total": 0.4075342465753425
+    },
+    {
+      "zone": "few_shot",
+      "message_count": 2,
+      "token_count": 38,
+      "char_count": 184,
+      "pct_of_total": 0.13013698630136986
+    },
+    {
+      "zone": "rag",
+      "message_count": 4,
+      "token_count": 92,
+      "char_count": 473,
+      "pct_of_total": 0.3150684931506849
+    },
+    {
+      "zone": "history",
+      "message_count": 2,
+      "token_count": 25,
+      "char_count": 120,
+      "pct_of_total": 0.08561643835616438
+    },
+    {
+      "zone": "user",
+      "message_count": 1,
+      "token_count": 18,
+      "char_count": 87,
+      "pct_of_total": 0.06164383561643835
+    }
+  ],
+  "chunks": [
+    {
+      "index": 0,
+      "text_preview": "Apples are red, green, or yellow fruits that grow on trees in temperate climates. They are high in fiber and vitamin C.",
+      "token_count": 26,
+      "char_count": 119,
+      "position": 0,
+      "score": 0.045454545454545456,
+      "method": "lcs",
+      "boilerplate_ratio": 0.24545454545454545,
+      "positional_penalty": 0.0
+    },
+    {
+      "index": 1,
+      "text_preview": "Bananas are elongated yellow tropical fruits produced by several kinds of large herbaceous plants. They are rich in potassium.",
+      "token_count": 21,
+      "char_count": 126,
+      "position": 1,
+      "score": 0.10526315789473684,
+      "method": "containment",
+      "boilerplate_ratio": 0.15789473684210525,
+      "positional_penalty": 0.4444444444444444
+    },
+    {
+      "index": 2,
+      "text_preview": "Oranges are round citrus fruits high in vitamin C. The orange originated in Southeast Asia and was spread worldwide.",
+      "token_count": 21,
+      "char_count": 116,
+      "position": 2,
+      "score": 0.05263157894736842,
+      "method": "lcs",
+      "boilerplate_ratio": 0.22105263157894736,
+      "positional_penalty": 0.4444444444444444
+    },
+    {
+      "index": 3,
+      "text_preview": "The lost-in-the-middle effect: language models pay less attention to information in the middle of long contexts.",
+      "token_count": 24,
+      "char_count": 112,
+      "position": 3,
+      "score": 0.2631578947368421,
+      "method": "containment",
+      "boilerplate_ratio": 0.28533834586466167,
+      "positional_penalty": 0.0
+    }
+  ],
+  "messages": [
+    {
+      "index": 0,
+      "role": "tool_schema",
+      "zone": "tool_schema",
+      "source": "tools",
+      "char_count": 323,
+      "token_count": 119
+    },
+    {
+      "index": 1,
+      "role": "example",
+      "zone": "few_shot",
+      "source": "few_shot_examples[0]",
+      "char_count": 94,
+      "token_count": 21
+    },
+    {
+      "index": 2,
+      "role": "example",
+      "zone": "few_shot",
+      "source": "few_shot_examples[1]",
+      "char_count": 90,
+      "token_count": 17
+    },
+    {
+      "index": 3,
+      "role": "document",
+      "zone": "rag",
+      "source": "context_docs[0]",
+      "char_count": 119,
+      "token_count": 26
+    },
+    {
+      "index": 4,
+      "role": "document",
+      "zone": "rag",
+      "source": "context_docs[1]",
+      "char_count": 126,
+      "token_count": 21
+    },
+    {
+      "index": 5,
+      "role": "document",
+      "zone": "rag",
+      "source": "context_docs[2]",
+      "char_count": 116,
+      "token_count": 21
+    },
+    {
+      "index": 6,
+      "role": "document",
+      "zone": "rag",
+      "source": "context_docs[3]",
+      "char_count": 112,
+      "token_count": 24
+    },
+    {
+      "index": 7,
+      "role": "user",
+      "zone": "history",
+      "source": "chat_history[0]",
+      "char_count": 32,
+      "token_count": 8
+    },
+    {
+      "index": 8,
+      "role": "assistant",
+      "zone": "history",
+      "source": "chat_history[1]",
+      "char_count": 88,
+      "token_count": 17
+    },
+    {
+      "index": 9,
+      "role": "user",
+      "zone": "user",
+      "source": "messages[0]",
+      "char_count": 87,
+      "token_count": 18
+    }
+  ],
+  "boilerplate": {
+    "flagged_chunk_count": 0,
+    "flagged_token_total": 0,
+    "avg_boilerplate_ratio": 0.22743506493506493,
+    "avg_positional_penalty": 0.2222222222222222,
+    "high_risk": false
+  },
+  "warnings": []
+}

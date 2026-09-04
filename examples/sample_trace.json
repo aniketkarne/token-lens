@@ -1,0 +1,38 @@
+{
+  "model": "gpt-4o",
+  "system_prompt": "You are an expert nutritionist answering questions about fruits. Always cite the source doc when possible. If you don't know, say so.",
+  "tools": [
+    {
+      "type": "function",
+      "function": {
+        "name": "lookup_fruit",
+        "description": "Look up nutrition facts for a fruit by name.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "name": {"type": "string", "description": "Fruit name"},
+            "region": {"type": "string", "description": "Optional region filter"}
+          },
+          "required": ["name"]
+        }
+      }
+    }
+  ],
+  "few_shot_examples": [
+    {"input": "What is a fruit?", "output": "A fruit is the seed-bearing structure of a flowering plant, typically edible."},
+    {"input": "Are bananas berries?", "output": "Yes, botanically bananas qualify as berries, but strawberries do not."}
+  ],
+  "context_docs": [
+    {"text": "Apples are red, green, or yellow fruits that grow on trees in temperate climates. They are high in fiber and vitamin C."},
+    {"text": "Bananas are elongated yellow tropical fruits produced by several kinds of large herbaceous plants. They are rich in potassium."},
+    {"text": "Oranges are round citrus fruits high in vitamin C. The orange originated in Southeast Asia and was spread worldwide."},
+    {"text": "The lost-in-the-middle effect: language models pay less attention to information in the middle of long contexts."}
+  ],
+  "chat_history": [
+    {"role": "user", "content": "Earlier: what counts as a fruit?"},
+    {"role": "assistant", "content": "Botanically, a fruit is the mature ovary of a flowering plant, usually containing seeds."}
+  ],
+  "messages": [
+    {"role": "user", "content": "Compare the nutritional profile of apples vs. bananas. Which is better for a long hike?"}
+  ]
+}
