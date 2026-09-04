@@ -2,7 +2,12 @@
 
 > **Offline token analyzer for LLM prompts.** Classify zones, count tokens,
 > score chunk utilization, flag boilerplate, and render self-contained HTML
-> treemaps. Zero network. Zero CDN.
+> treemaps — from a CLI, a Python API, or a local web UI.
+> Zero network. Zero CDN. Python stdlib only.
+
+<p align="center">
+  <img src="assets/hero.svg" alt="token-lens zone treemap" width="520">
+</p>
 
 ```
 +-----------------------+        +-------------------------+        +----------------------+
@@ -11,7 +16,12 @@
 |   + tools + RAG docs) |        |  + score + boilerplate  |        |  - zone breakdown    |
 +-----------------------+        |  + cost estimate        |        |  - chunk scores      |
                                  +-------------------------+        |  - per-message list  |
-                                                                    +----------------------+
+        ^                                     |                     +----------------------+
+        |                                     v
+   web UI upload                   +-------------------------+
+   (token-lens serve)  <---------- |  local HTTP server      |
+                                   |  UI + JSON API          |
+                                   +-------------------------+
 ```
 
 ---
@@ -34,21 +44,123 @@ into a number, a score, and a visualization.
 
 ---
 
-## Quickstart (3 steps)
+## Quickstart
 
 ```bash
 # 1. Install
 pip install -e .
 
-# 2. Analyze a trace
-token-lens examples/sample_trace.json --model gpt-4o --open
+# 2a. One-shot analysis (writes a self-contained HTML report)
+token-lens analyze examples/sample_trace.json --model gpt-4o --open
 
-# 3. (Optional) Export machine-readable summary or standalone SVG
-token-lens examples/sample_trace.json --model gpt-4o \
-    --svg treemap.svg --json summary.json
+# 2b. Or run the local web UI and drop traces in from the browser
+token-lens serve                      # http://127.0.0.1:8765/
 ```
 
-That's it — open the HTML in any browser; no internet required.
+Both paths use exactly the same analyzer. Nothing leaves your machine.
+
+---
+
+## Two ways to run it
+
+### 1. `token-lens analyze` — batch / CI
+
+```
+token-lens analyze TRACE [options]
+
+  TRACE                       Path to a JSON trace file.
+  --model NAME                Model identifier (drives tokenizer + price table).
+  --price-per-1k USD          Override price per 1K input tokens.
+  -o, --output PATH           HTML output path (default: token-lens-report.html).
+  --svg PATH                  Also write a standalone SVG treemap.
+  --json PATH                 Also write a JSON summary.
+  --open                      Open the HTML report in the default browser.
+```
+
+```bash
+token-lens analyze examples/sample_trace.json --model gpt-4o \
+    -o report.html --svg treemap.svg --json summary.json
+```
+
+The bare legacy form is still supported for backward compatibility:
+
+```bash
+token-lens examples/sample_trace.json --model gpt-4o
+```
+
+### 2. `token-lens serve` — local web app
+
+```
+token-lens serve [options]
+
+  --host HOST       Bind host (default: 127.0.0.1).
+  --port PORT       Bind port (default: 8765).
+  --cache DIR       Directory to persist rendered artifacts (default: temp dir).
+  --once            Serve a single request then exit (smoke tests / CI).
+```
+
+```bash
+token-lens serve --port 8765 --cache ./.token-lens-cache
+# equivalent entry points:
+token-lens-serve --port 8765
+python -m token_lens.server --port 8765
+```
+
+The server is built on `http.server` from the standard library — **no Flask,
+no FastAPI, no uvicorn, no npm, no CDN**. The UI is a single HTML page with
+inline CSS and one inline script; the hero illustration is served from
+`assets/hero.svg`.
+
+What the UI does:
+
+* upload a `.json` trace **or** paste JSON directly into the page
+* optionally override `model` and `price per 1K tokens` per request
+* load the bundled sample trace with one click
+* show KPIs (total tokens, chars, messages, encoder, estimated cost, risk)
+* show a per-zone bar breakdown with token counts and percentages
+* link to the rendered report and to `.html` / `.svg` / `.json` downloads
+
+### HTTP API
+
+| Method | Route                          | Purpose                                            |
+| ------ | ------------------------------ | -------------------------------------------------- |
+| `POST` | `/api/upload`                  | Raw JSON body **or** `multipart/form-data` `file=@trace.json`. Returns `{report_id, report}`. |
+| `GET`  | `/api/sample`                  | The bundled example trace as JSON.                 |
+| `GET`  | `/api/report/<id>`             | JSON summary of a previously uploaded trace.       |
+| `GET`  | `/api/download/<id>/html`      | Rendered self-contained HTML report (attachment).  |
+| `GET`  | `/api/download/<id>/svg`       | Standalone SVG treemap.                            |
+| `GET`  | `/api/download/<id>/json`      | Machine-readable summary.                          |
+| `GET`  | `/api/download/<id>/trace`     | Echo of the original uploaded trace.               |
+| `GET`  | `/reports/<id>`                | The HTML report rendered inline (no download).     |
+| `GET`  | `/assets/hero.svg`             | The hero illustration (`image/svg+xml`).           |
+| `GET`  | `/healthz`                     | Plain-text `ok` liveness probe.                    |
+
+Per-request overrides are read from the uploaded JSON itself: a top-level
+`"model"` key selects the tokenizer/price, and `"__price_per_1k"` overrides
+the price table.
+
+```bash
+# start it
+token-lens serve --port 8765 &
+
+# health
+curl -s http://127.0.0.1:8765/healthz            # -> ok
+
+# analyze a trace and capture the report id
+RID=$(curl -s -X POST -H 'content-type: application/json' \
+        --data-binary @examples/sample_trace.json \
+        http://127.0.0.1:8765/api/upload | python3 -c 'import sys,json;print(json.load(sys.stdin)["report_id"])')
+
+# fetch the summary and the artifacts
+curl -s http://127.0.0.1:8765/api/report/$RID
+curl -sO http://127.0.0.1:8765/api/download/$RID/html
+
+# multipart upload works too
+curl -s -F file=@examples/sample_trace.json http://127.0.0.1:8765/api/upload
+```
+
+Uploads larger than 32 MB are rejected with `413`; malformed JSON returns
+`400`; unknown report ids return `404`.
 
 ---
 
@@ -75,8 +187,8 @@ That's it — open the HTML in any browser; no internet required.
                         |
                         v
               +------------------+         +----------------------+
-              |  score.py        |  -----> |  ngram / LCS /      |
-              |  (chunk util.)   |         |  containment        |
+              |  score.py        |  -----> |  ngram / LCS /       |
+              |  (chunk util.)   |         |  containment         |
               +---------+--------+         +----------------------+
                         |
                         v
@@ -90,6 +202,12 @@ That's it — open the HTML in any browser; no internet required.
               +------------------+         +----------------------+
               |  report.py       |  -----> |  HTML + inline SVG   |
               |  (treemap + UI)  |         |  treemap             |
+              +---------+--------+         +----------------------+
+                        |
+                        v
+              +------------------+         +----------------------+
+              |  server.py       |  -----> |  local UI + JSON API |
+              |  (http.server)   |         |  artifact cache      |
               +------------------+         +----------------------+
 ```
 
@@ -111,21 +229,7 @@ The HTML is **self-contained** — no `<script src=…>`, no `<link rel="stylesh
 
 ---
 
-## CLI
-
-```
-token-lens TRACE [options]
-
-  TRACE                       Path to a JSON trace file.
-  --model NAME                Model identifier (drives tokenizer + price table).
-  --price-per-1k USD          Override price per 1K input tokens.
-  -o, --output PATH           HTML output path (default: token-lens-report.html).
-  --svg PATH                  Also write a standalone SVG treemap.
-  --json PATH                 Also write a JSON summary.
-  --open                      Open the HTML report in the default browser.
-```
-
-### Trace format
+## Trace format
 
 `token-lens` walks the JSON and classifies by **key name** (e.g., `tools`, `context_docs`, `few_shot_examples`, `chat_history`, `system_prompt`) and by **role** inside `messages` lists. The minimum you need:
 
@@ -147,15 +251,28 @@ Unrecognized keys are still walked; messages are picked up by `role` + `content`
 ## Python API
 
 ```python
-from token_lens import analyze_file, render_html
+from token_lens import analyze_file, render_html, render_svg, build_server
 
 report = analyze_file(
     "trace.json",
     config={"model": "gpt-4o", "price_per_1k": None},
 )
 print(report.total_tokens, report.zones)
-render_html(report)             # returns str
-# or: write_html(report, "report.html")
+
+html = render_html(report)      # str, self-contained
+svg = render_svg(report)        # str, standalone treemap
+# or: from token_lens.report import write_html, write_svg
+```
+
+Embedding the server:
+
+```python
+from pathlib import Path
+from token_lens.server import _ReportStore, build_server
+
+store = _ReportStore(Path("./.token-lens-cache"))
+httpd = build_server("127.0.0.1", 8765, store)
+httpd.serve_forever()
 ```
 
 ---
@@ -190,14 +307,21 @@ Resolution order, with deterministic fallback:
 
 The fallback is intentionally reproducible — given identical input it returns identical counts on every machine, every time, without any provider dependency.
 
+Optional extras:
+
+```bash
+pip install -e ".[tiktoken]"       # exact OpenAI counts
+pip install -e ".[transformers]"   # HF tokenizers
+```
+
 ---
 
 ## Configuration reference
 
-| Config key        | CLI flag           | Default          | Notes                                  |
-| ----------------- | ------------------ | ---------------- | -------------------------------------- |
-| `model`           | `--model`          | (read from trace)| Drives tokenizer + price lookup        |
-| `price_per_1k`    | `--price-per-1k`   | (from table)     | Overrides built-in pricing             |
+| Config key        | CLI flag           | API field          | Default          | Notes                            |
+| ----------------- | ------------------ | ------------------ | ---------------- | -------------------------------- |
+| `model`           | `--model`          | `"model"`          | (read from trace)| Drives tokenizer + price lookup  |
+| `price_per_1k`    | `--price-per-1k`   | `"__price_per_1k"` | (from table)     | Overrides built-in pricing       |
 
 Built-in pricing (per 1K input tokens, USD):
 
@@ -222,7 +346,13 @@ git clone https://github.com/aniketkarne-com/token-lens
 cd token-lens
 python3 -m venv .venv && source .venv/bin/activate
 pip install -e ".[test]"
-pytest                    # 50 tests, ~0.04s
+pytest                    # 62 tests
+```
+
+Smoke-test the server without leaving a process running:
+
+```bash
+token-lens serve --port 8765 --once   # handles one request, then exits
 ```
 
 Layout:
@@ -238,10 +368,12 @@ token_lens/
   pricing.py      # cost lookup table
   analyze.py      # analyze_trace + analyze_file
   report.py       # HTML + SVG treemap renderer (self-contained)
-  cli.py          # argparse CLI + --open
+  server.py       # stdlib HTTP server: web UI + JSON API + artifact cache
+  cli.py          # argparse CLI: analyze / serve (+ legacy bare form)
   py.typed        # PEP 561 marker
-tests/            # 50 tests across parser, tokenizers, scoring, report, analyze
-examples/         # sample_trace.json
+assets/           # hero.svg (served at /assets/hero.svg, used in this README)
+tests/            # 62 tests across parser, tokenizers, scoring, report, analyze, server
+examples/         # sample_trace.json, summary.json, treemap.svg
 ```
 
 ---

@@ -371,7 +371,7 @@ def render_html(report: AnalysisReport) -> str:
     encoder: <code>{html.escape(report.encoder_label)}</code> ·
     tokenizer_source: <code>{html.escape(report.tokenizer_source)}</code> ·
     messages: {report.message_count} ·
-    generated: token-lens v0.1.0
+    generated: token-lens v0.2.0
   </div>
 </header>
 <main>

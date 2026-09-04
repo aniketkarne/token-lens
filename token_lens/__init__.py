@@ -5,6 +5,7 @@ Public API:
     analyze_file(path) -> AnalysisReport
     render_html(report, output_path) -> None
     render_svg(report, output_path) -> None
+    build_server(host, port, store) -> ThreadingHTTPServer  (web UI)
 """
 
 from __future__ import annotations
@@ -18,6 +19,7 @@ from .types import (
 )
 from .analyze import analyze_file, analyze_trace
 from .report import render_html, render_svg
+from .server import build_server
 
 __all__ = [
     "AnalysisReport",
@@ -29,6 +31,7 @@ __all__ = [
     "analyze_trace",
     "render_html",
     "render_svg",
+    "build_server",
 ]
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"

@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "token-lens"
-version = "0.1.0"
-description = "Offline token lens for LLM prompt zones: classify, count, score, and visualize."
+version = "0.2.0"
+description = "Offline token lens for LLM prompt zones: classify, count, score, visualize, and serve."
 readme = "README.md"
 requires-python = ">=3.9"
 license = { text = "MIT" }
@@ -31,6 +31,7 @@ transformers = ["transformers>=4.30"]
 
 [project.scripts]
 token-lens = "token_lens.cli:main"
+token-lens-serve = "token_lens.server:main"
 
 [project.urls]
 Homepage = "https://github.com/aniketkarne-com/token-lens"
