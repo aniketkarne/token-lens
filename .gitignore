@@ -24,3 +24,7 @@ htmlcov/
 
 # Local report outputs (committed examples only)
 /token-lens-report.html
+
+.demo-out/
+demo-*.html
+demo-compare.md
