@@ -10,6 +10,7 @@ from typing import Any, Mapping
 from .boilerplate import aggregate_risk, boilerplate_ratio, positional_penalty
 from .parse import load_trace, parse_trace
 from .pricing import estimate_cost
+from .recommend import build_recommendations
 from .score import best_score
 from .tokenize import resolve_encoder
 from .types import (
@@ -124,7 +125,7 @@ def analyze_trace(trace: Any, config: Mapping[str, Any] | None = None) -> Analys
 
     cost, cost_label = estimate_cost(model, total_tokens, price_override)
 
-    return AnalysisReport(
+    base = AnalysisReport(
         model=model,
         encoder_label=encoder.name,
         tokenizer_source=encoder.source,
@@ -140,6 +141,9 @@ def analyze_trace(trace: Any, config: Mapping[str, Any] | None = None) -> Analys
         config=cfg,
         warnings=warnings,
     )
+    # Recommendations need cost/zone info but live on the report itself.
+    base.recommendations = build_recommendations(base)
+    return base
 
 
 def analyze_file(path: str | Path, config: Mapping[str, Any] | None = None) -> AnalysisReport:

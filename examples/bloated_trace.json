@@ -1,0 +1,168 @@
+{
+  "model": "gpt-4o",
+  "system_prompt": "You are an expert nutritionist answering questions about fruits. Always cite the source doc when possible. If you don't know, say so. Please be exhaustive and thorough in your answers. Never skip any detail. When in doubt, err on the side of providing more context rather than less. Always include a friendly greeting, a long disclaimer, a summary, and a closing remark. Make sure every answer starts with 'Hello and welcome!'. Also include the words 'please note' and 'kindly' at least once each. The user is always right. The user is asking a question about fruits, so please keep that in mind at all times. Thank you for your cooperation. Please also remember to be polite. End the response with a cheerful call to action. Use markdown formatting whenever possible.",
+  "tools": [
+    {
+      "type": "function",
+      "function": {
+        "name": "lookup_fruit",
+        "description": "Look up nutrition facts for a fruit by name. This function retrieves detailed nutrition information from the upstream knowledge base and supports optional filters.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "Fruit name. Must be lowercase. May include spaces. May include apostrophes. May include accents."
+            },
+            "region": {
+              "type": "string",
+              "description": "Optional region filter. Choose from: North, South, East, West, Central."
+            },
+            "include_macros": {
+              "type": "boolean",
+              "description": "Whether to include macronutrient breakdown."
+            },
+            "include_micros": {
+              "type": "boolean",
+              "description": "Whether to include micronutrient breakdown."
+            },
+            "include_history": {
+              "type": "boolean",
+              "description": "Whether to include the historical background of the fruit."
+            }
+          },
+          "required": [
+            "name"
+          ]
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "compare_fruits",
+        "description": "Compare the nutritional profile of two fruits.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "a": {
+              "type": "string",
+              "description": "First fruit."
+            },
+            "b": {
+              "type": "string",
+              "description": "Second fruit."
+            }
+          },
+          "required": [
+            "a",
+            "b"
+          ]
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "list_fruits",
+        "description": "List all known fruits in the database.",
+        "parameters": {
+          "type": "object",
+          "properties": {}
+        }
+      }
+    }
+  ],
+  "few_shot_examples": [
+    {
+      "input": "What is a fruit?",
+      "output": "A fruit is the seed-bearing structure of a flowering plant, typically edible."
+    },
+    {
+      "input": "Are bananas berries?",
+      "output": "Yes, botanically bananas qualify as berries, but strawberries do not."
+    },
+    {
+      "input": "What about strawberries?",
+      "output": "Strawberries are aggregate accessory fruits, not true berries."
+    },
+    {
+      "input": "Are grapes berries?",
+      "output": "Yes, grapes are true berries."
+    },
+    {
+      "input": "Are tomatoes fruits?",
+      "output": "Yes, tomatoes are botanically fruits."
+    },
+    {
+      "input": "What is the difference between a fruit and a vegetable?",
+      "output": "Botanically, fruit is the mature ovary of a flowering plant; vegetable is a culinary term."
+    }
+  ],
+  "context_docs": [
+    {
+      "text": "Apples are red, green, or yellow fruits that grow on trees in temperate climates. They are high in fiber and vitamin C. The original wild ancestor, Malus sieversii, originated in Central Asia. Apples are members of the Rosaceae family. The apple tree was brought to North America by European colonists. Apple varieties include Gala, Fuji, Granny Smith, Honeycrisp, and Red Delicious. Each variety has slightly different nutritional content. Please note that apples are also commonly used in desserts such as apple pie. They are also fermented to produce cider. The phrase 'an apple a day keeps the doctor away' is a well-known proverb. The proverb is of medieval origin. Apples contain antioxidants. Apples are also used in baking."
+    },
+    {
+      "text": "Bananas are elongated yellow tropical fruits produced by several kinds of large herbaceous plants. They are rich in potassium. Bananas are also a good source of vitamin B6. Please note that bananas grow in bunches. The banana plant is actually not a tree but an herb. The largest producers of bananas are India and China. Bananas are also used in cooking, including banana bread. There are many varieties of banana, including the Cavendish, which is the most common. Bananas are also used in smoothies. They can be dried and eaten as a snack. The phrase 'go bananas' is a common English idiom."
+    },
+    {
+      "text": "Oranges are round citrus fruits high in vitamin C. The orange originated in Southeast Asia and was spread worldwide. Oranges are also rich in folate. The most common variety is the Valencia orange. Navel oranges are seedless. Blood oranges have red flesh. Please note that orange juice is a popular breakfast beverage. Oranges are also used in marmalade. The orange blossom is the state flower of Florida. Oranges are also used in essential oils. They are often grown in Mediterranean climates."
+    },
+    {
+      "text": "Mangoes are drupe fruits from the Mangifera indica tree, native to South Asia. They are rich in vitamins A and C. Please also note that mangoes come in many varieties including Alphonso, Keitt, and Tommy Atkins. Mangoes are used widely in chutneys and pickles. India is the largest producer of mangoes. The mango is the national fruit of India. Mangoes are also used in smoothies. They are eaten both ripe and unripe. Unripe mangoes are used in dishes like mango salad."
+    },
+    {
+      "text": "The lost-in-the-middle effect: language models pay less attention to information in the middle of long contexts. Source: Liu et al., 2023. Please note that this is a well-established empirical finding. The effect is most pronounced when the context window is fully populated. Please also note that retrieval-augmented generation can mitigate, but not eliminate, the effect. The paper is available at https://example.com/lost-in-the-middle.pdf. Thank you for your attention. Please also remember to cite this paper when relevant."
+    },
+    {
+      "text": "Random chunk about bird taxonomy: pigeons are birds in the order Columbiformes. This is unrelated to fruit. Please also note that penguin taxonomy is in the order Sphenisciformes. This chunk was retrieved because of the word 'note' but is otherwise irrelevant. https://example.com/birds. Hello and welcome to this completely unrelated section. The user did not ask about birds. Kindly disregard this paragraph."
+    },
+    {
+      "text": "Insurance policy boilerplate: this is a placeholder text from a corporate document. Section 1 of 200. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Please note that this is filler. Please also note that this is boilerplate. Hello and welcome to the terms of service. The terms of service may be updated at any time. We kindly ask that you read the terms of service in full. The terms of service include a mandatory arbitration clause. The terms of service include a class-action waiver."
+    },
+    {
+      "text": "Marketing copy: please also be advised that the very best fruit is the fruit that you enjoy eating. The customer is always right. Hello and welcome. We are delighted to serve you. Kindly remember to smile. The fruit is fresh. The fruit is local. The fruit is organic. Please also note that this is filler marketing copy. The nutritional content varies depending on growing conditions. The fruit is also gluten-free. The fruit is also vegan."
+    }
+  ],
+  "chat_history": [
+    {
+      "role": "user",
+      "content": "Earlier: what counts as a fruit?"
+    },
+    {
+      "role": "assistant",
+      "content": "Botanically, a fruit is the mature ovary of a flowering plant, usually containing seeds."
+    },
+    {
+      "role": "user",
+      "content": "And how do I pick a ripe one?"
+    },
+    {
+      "role": "assistant",
+      "content": "Look for bright color, slight give when pressed, and a fragrant aroma at the stem end."
+    },
+    {
+      "role": "user",
+      "content": "What about storage?"
+    },
+    {
+      "role": "assistant",
+      "content": "Most fruit keeps best refrigerated; bananas and tomatoes are exceptions and should be kept at room temperature."
+    },
+    {
+      "role": "user",
+      "content": "Thanks! Now back to the main question."
+    },
+    {
+      "role": "assistant",
+      "content": "You're welcome — happy to keep digging in."
+    }
+  ],
+  "messages": [
+    {
+      "role": "user",
+      "content": "Compare the nutritional profile of apples vs. bananas. Which is better for a long hike?"
+    }
+  ]
+}

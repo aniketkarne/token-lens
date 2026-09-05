@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>token-lens report — gpt-4o</title>
+<style>
+:root {
+  color-scheme: dark;
+  --bg: #0f172a;
+  --bg-2: #1e293b;
+  --fg: #e2e8f0;
+  --muted: #94a3b8;
+  --accent: #38bdf8;
+  --warn: #f97316;
+  --danger: #ef4444;
+  --ok: #22c55e;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font: 14px/1.5 ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+header {
+  padding: 24px 32px;
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  border-bottom: 1px solid #334155;
+}
+header h1 {
+  margin: 0 0 6px;
+  font-size: 22px;
+  letter-spacing: -0.01em;
+}
+header .meta {
+  color: var(--muted);
+  font: 12px/1.5 ui-monospace, "JetBrains Mono", monospace;
+}
+main {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: 24px;
+  padding: 24px 32px;
+  max-width: 1280px;
+  margin: 0 auto;
+}
+section {
+  background: var(--bg-2);
+  border: 1px solid #334155;
+  border-radius: 10px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+section h2 {
+  margin: 0 0 12px;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+}
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 12px;
+}
+.kpi {
+  background: #0b1322;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  padding: 14px;
+}
+.kpi .k {
+  color: var(--muted);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.kpi .v {
+  font-size: 22px;
+  font-weight: 600;
+  margin-top: 4px;
+  font-variant-numeric: tabular-nums;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+th, td {
+  padding: 8px 10px;
+  text-align: left;
+  border-bottom: 1px solid #334155;
+}
+th {
+  color: var(--muted);
+  font-weight: 600;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.bar {
+  display: inline-block;
+  height: 8px;
+  border-radius: 4px;
+  background: var(--accent);
+  vertical-align: middle;
+}
+.zone-swatch {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+.warn { color: var(--warn); }
+.danger { color: var(--danger); }
+.ok { color: var(--ok); }
+.chunk-row.flagged {
+  background: rgba(239, 68, 68, 0.08);
+}
+details summary {
+  cursor: pointer;
+  color: var(--muted);
+}
+code {
+  background: #0b1322;
+  padding: 1px 6px;
+  border-radius: 4px;
+  font: 12px ui-monospace, "JetBrains Mono", monospace;
+}
+@media (max-width: 920px) {
+  main { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+<header>
+  <h1>token-lens report</h1>
+  <div class="meta">
+    model: <code>gpt-4o</code> ·
+    encoder: <code>heuristic-bpe-lite</code> ·
+    tokenizer_source: <code>fallback</code> ·
+    messages: 5 ·
+    generated: token-lens v0.2.0
+  </div>
+</header>
+<main>
+<div>
+  <section>
+    <h2>Token Usage Treemap</h2>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 360" role="img" aria-label="Token usage treemap" width="100%" height="auto" style="background:#0f172a;border-radius:8px;"><style>.tl-cell{stroke:#0f172a;stroke-width:2;cursor:default;}.tl-label{fill:#f8fafc;font:600 12px ui-sans-serif,system-ui,sans-serif;}.tl-sub{fill:#cbd5e1;font:500 10px ui-monospace,monospace;}</style><rect class="tl-cell" x="0.0" y="0.0" width="418.5" height="360.0" fill="#a855f7" rx="4"><title>tool_schema: 93 tokens (58.1%)</title></rect><text class="tl-label" x="8.0" y="16.0">tool_schema</text><text class="tl-sub" x="8.0" y="28.0">93 tok (58.1%)</text><rect class="tl-cell" x="418.5" y="0.0" width="225.0" height="230.4" fill="#10b981" rx="4"><title>rag: 32 tokens (20.0%)</title></rect><text class="tl-label" x="426.5" y="16.0">rag</text><text class="tl-sub" x="426.5" y="28.0">32 tok (20.0%)</text><rect class="tl-cell" x="418.5" y="230.4" width="225.0" height="129.6" fill="#06b6d4" rx="4"><title>user: 18 tokens (11.2%)</title></rect><text class="tl-label" x="426.5" y="246.4">user</text><text class="tl-sub" x="426.5" y="258.4">18 tok (11.2%)</text><rect class="tl-cell" x="643.5" y="0.0" width="76.5" height="360.0" fill="#ec4899" rx="4"><title>few_shot: 17 tokens (10.6%)</title></rect><text class="tl-label" x="651.5" y="16.0">few_shot</text><text class="tl-sub" x="651.5" y="28.0">17 tok (10.6%)</text></svg>
+  </section>
+  <section>
+    <h2>Zone Breakdown</h2>
+    <table><thead><tr><th>Zone</th><th>Messages</th><th>Tokens</th><th>%</th><th>Chars</th></tr></thead><tbody><tr><td><span class="zone-swatch" style="background:#a855f7"></span>tool_schema</td><td>1</td><td><span class="bar" style="width:116.3px"></span> 93</td><td>58.1%</td><td>244</td></tr><tr><td><span class="zone-swatch" style="background:#ec4899"></span>few_shot</td><td>1</td><td><span class="bar" style="width:21.2px"></span> 17</td><td>10.6%</td><td>81</td></tr><tr><td><span class="zone-swatch" style="background:#10b981"></span>rag</td><td>2</td><td><span class="bar" style="width:40.0px"></span> 32</td><td>20.0%</td><td>158</td></tr><tr><td><span class="zone-swatch" style="background:#06b6d4"></span>user</td><td>1</td><td><span class="bar" style="width:22.5px"></span> 18</td><td>11.2%</td><td>87</td></tr></tbody></table>
+  </section>
+  <section>
+    <h2>Chunk Utilization</h2>
+    <table><thead><tr><th>#</th><th>Pos</th><th>Tokens</th><th>Score</th><th>Method</th><th>Boilerplate</th><th>Pos. penalty</th><th>Preview</th></tr></thead><tbody><tr class="chunk-row"><td>0</td><td>0</td><td>18</td><td>0.071</td><td><code>containment</code></td><td>0.21</td><td>0.00</td><td><span title="Apples are red, green, or yellow temperate fruits, high in fiber and vitamin C.">Apples are red, green, or yellow temperate fruits, high in fiber and vitamin C.</span></td></tr><tr class="chunk-row"><td>1</td><td>1</td><td>14</td><td>0.083</td><td><code>containment</code></td><td>0.20</td><td>0.00</td><td><span title="Bananas are elongated yellow tropical fruits, rich in potassium and vitamin B6.">Bananas are elongated yellow tropical fruits, rich in potassium and vitamin B6.</span></td></tr></tbody></table>
+  </section>
+  <section>
+    <h2>Messages (5)</h2>
+    <table><thead><tr><th>#</th><th>Zone</th><th>Role</th><th>Tokens</th><th>Chars</th><th>Source</th><th>Preview</th></tr></thead><tbody><tr><td>0</td><td><span class="zone-swatch" style="background:#a855f7"></span>tool_schema</td><td><code>tool_schema</code></td><td>93</td><td>244</td><td><code>tools</code></td><td><span title="[{&quot;type&quot;: &quot;function&quot;, &quot;function&quot;: {&quot;name&quot;: &quot;lookup_fruit&quot;, &quot;description&quot;: &quot;Look up nutrition facts for a fruit.&quot;, &quot;parameters&quot;: {&quot;type&quot;: &quot;object&quot;, &quot;properties&quot;: {&quot;name&quot;: {&quot;type&quot;: &quot;string&quot;, &quot;description&quot;: &quot;Fruit name&quot;}}, &quot;required&quot;: [&quot;name&quot;]}}}]">[{&quot;type&quot;: &quot;function&quot;, &quot;function&quot;: {&quot;name&quot;: &quot;lookup_fruit&quot;, &quot;description&quot;: &quot;Look up nutrition facts for a fruit.&quot;, &quot;parameters&quot;: {&quot;type&quot;: &quot;object&quot;, &quot;properties&quot;:</span></td></tr><tr><td>1</td><td><span class="zone-swatch" style="background:#ec4899"></span>few_shot</td><td><code>example</code></td><td>17</td><td>81</td><td><code>few_shot_examples[0]</code></td><td><span title="What is a fruit?
+The mature ovary of a flowering plant, usually containing seeds.">What is a fruit? The mature ovary of a flowering plant, usually containing seeds.</span></td></tr><tr><td>2</td><td><span class="zone-swatch" style="background:#10b981"></span>rag</td><td><code>document</code></td><td>18</td><td>79</td><td><code>context_docs[0]</code></td><td><span title="Apples are red, green, or yellow temperate fruits, high in fiber and vitamin C.">Apples are red, green, or yellow temperate fruits, high in fiber and vitamin C.</span></td></tr><tr><td>3</td><td><span class="zone-swatch" style="background:#10b981"></span>rag</td><td><code>document</code></td><td>14</td><td>79</td><td><code>context_docs[1]</code></td><td><span title="Bananas are elongated yellow tropical fruits, rich in potassium and vitamin B6.">Bananas are elongated yellow tropical fruits, rich in potassium and vitamin B6.</span></td></tr><tr><td>4</td><td><span class="zone-swatch" style="background:#06b6d4"></span>user</td><td><code>user</code></td><td>18</td><td>87</td><td><code>messages[0]</code></td><td><span title="Compare the nutritional profile of apples vs. bananas. Which is better for a long hike?">Compare the nutritional profile of apples vs. bananas. Which is better for a long hike?</span></td></tr></tbody></table>
+  </section>
+</div>
+<aside>
+  <section>
+    <h2>Totals</h2>
+    <div class="kpi-grid">
+      <div class="kpi"><div class="k">Total tokens</div><div class="v ">160</div></div>
+      <div class="kpi"><div class="k">Total chars</div><div class="v ">570</div></div>
+      <div class="kpi"><div class="k">Messages</div><div class="v ">5</div></div>
+      <div class="kpi"><div class="k">Est. cost</div><div class="v ">$0.000800</div></div>
+      <div class="kpi"><div class="k">Price model</div><div class="v ">gpt-4o@$0.00500/1K</div></div>
+      <div class="kpi"><div class="k">Boilerplate risk</div><div class="v ok">OK</div></div>
+      <div class="kpi"><div class="k">Flagged chunks</div><div class="v ">0</div></div>
+      <div class="kpi"><div class="k">Flagged tokens</div><div class="v ">0</div></div>
+    </div>
+  </section>
+  <section>
+    <h2>Config</h2>
+    <pre style="white-space:pre-wrap;color:var(--muted);font:12px ui-monospace,monospace;">{
+  &quot;model&quot;: &quot;gpt-4o&quot;,
+  &quot;price_per_1k&quot;: null
+}</pre>
+  </section>
+  
+</aside>
+</main>
+</body>
+</html>

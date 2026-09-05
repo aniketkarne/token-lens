@@ -8,6 +8,12 @@ from pathlib import Path
 import pytest
 
 
+@pytest.fixture(scope="session")
+def repo_root() -> Path:
+    """Path to the repo root (tests/ lives one level below)."""
+    return Path(__file__).resolve().parent.parent
+
+
 @pytest.fixture
 def sample_trace() -> dict:
     return {

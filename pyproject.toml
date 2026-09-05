@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "token-lens"
-version = "0.2.0"
-description = "Offline token lens for LLM prompt zones: classify, count, score, visualize, and serve."
+version = "0.3.0"
+description = "Offline token lens for LLM prompt zones: classify, count, score, recommend savings, compare, visualize, and serve."
 readme = "README.md"
 requires-python = ">=3.9"
 license = { text = "MIT" }

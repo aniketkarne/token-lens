@@ -92,6 +92,7 @@ class AnalysisReport:
     boilerplate: BoilerplateStats
     config: Mapping[str, Any]
     warnings: list[str] = field(default_factory=list)
+    recommendations: list[Any] = field(default_factory=list)  # list[Recommendation], lazy-imported
 
     def zone(self, kind: ZoneKind) -> ZoneBreakdown | None:
         for z in self.zones:
@@ -152,4 +153,7 @@ class AnalysisReport:
                 "high_risk": self.boilerplate.high_risk,
             },
             "warnings": list(self.warnings),
+            "recommendations": [
+                r.to_dict() for r in (self.recommendations or [])
+            ],
         }

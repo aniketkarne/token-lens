@@ -1,8 +1,9 @@
 # token-lens
 
 > **Offline token analyzer for LLM prompts.** Classify zones, count tokens,
-> score chunk utilization, flag boilerplate, and render self-contained HTML
-> treemaps — from a CLI, a Python API, or a local web UI.
+> score chunk utilization, flag boilerplate, recommend concrete savings,
+> compare before/after, and render self-contained HTML treemaps — from a CLI,
+> a Python API, or a local web UI.
 > Zero network. Zero CDN. Python stdlib only.
 
 <p align="center">
@@ -55,13 +56,61 @@ token-lens analyze examples/sample_trace.json --model gpt-4o --open
 
 # 2b. Or run the local web UI and drop traces in from the browser
 token-lens serve                      # http://127.0.0.1:8765/
+
+# 2c. See the wow-factor demo: before/after in one command
+token-lens demo                       # writes demo-before.html, demo-after.html, demo-compare.md
 ```
 
-Both paths use exactly the same analyzer. Nothing leaves your machine.
+All three paths use exactly the same analyzer. Nothing leaves your machine.
 
 ---
 
-## Two ways to run it
+## ⚡ 60-second wow factor: `token-lens demo`
+
+This is the killer use-case. Drop a real prompt in, drop a tightened version
+in, and ask **how much did you save?** — in one command, no config:
+
+```bash
+$ token-lens demo
+token-lens demo  (gpt-4o)
+  before: 1,496 tokens  ($0.007480)
+  after:  160 tokens  ($0.000800)
+  saved: 1,336 tokens (-89.3%) ($0.006680)
+
+  zone delta
+    ↓ tool_schema       444 -> 93       (-351 tok)
+    ↓ few_shot          103 -> 17       (-86 tok)
+    ↓ rag               835 -> 32       (-803 tok)
+    - history            96 -> —        (-96 tok)
+```
+
+The `before` trace (`examples/bloated_trace.json`) is deliberately noisy:
+redundant system instructions, four overlapping tool schemas, six redundant
+few-shot examples, eight RAG chunks with three that are completely off-topic,
+eight turns of verbatim chat history, and a lot of marketing/legal filler.
+
+The `after` trace (`examples/lean_trace.json`) is the same question answered
+with a tight prompt. The demo command does the analysis, the comparison, and
+the saving — and writes `demo-before.html`, `demo-after.html`, and
+`demo-compare.md` so you can drop them straight into a PR.
+
+### Bring your own before/after
+
+```bash
+token-lens demo --before path/to/old.json --after path/to/new.json \
+    --model gpt-4o --out-dir ./demo-out --open
+```
+
+### Just want the numbers? `--quiet`
+
+```bash
+$ token-lens analyze examples/bloated_trace.json --quiet --model gpt-4o
+token-lens: 1,496 tokens, $0.007480 cost, savings available: ~915 tok (~$0.004575) [2 recommendation(s)]
+```
+
+---
+
+## Three ways to run it
 
 ### 1. `token-lens analyze` — batch / CI
 
@@ -87,6 +136,61 @@ The bare legacy form is still supported for backward compatibility:
 ```bash
 token-lens examples/sample_trace.json --model gpt-4o
 ```
+
+### 3. `token-lens compare` — diff two traces, savings-first
+
+```
+token-lens compare BEFORE.json AFTER.json [options]
+
+  BEFORE.json          Path to the BEFORE trace JSON.
+  AFTER.json           Path to the AFTER trace JSON.
+  --model NAME         Model identifier (drives tokenizer + price table).
+  --price-per-1k USD   Override price per 1K input tokens.
+  --md PATH            Write a markdown summary to this path (PR-comment ready).
+  --json PATH          Write a JSON diff to this path.
+  --no-color           Disable ANSI color in output.
+```
+
+```bash
+$ token-lens compare examples/bloated_trace.json examples/lean_trace.json --no-color
+token-lens compare
+  saved: 1,336 tokens (-89.3%) ($0.006680)
+
+tokens:  1,496 -> 160  (-1,336, -89.3%)
+cost:    $0.007480 -> $0.000800  ($-0.006680)
+zones:
+  ↓ tool_schema       444 -> 93       (-351 tok)
+  ↓ few_shot          103 -> 17       (-86 tok)
+  ↓ rag               835 -> 32       (-803 tok)
+  - history            96 -> —        (-96 tok)
+boilerplate risk: flagged_chunks 2 -> 0
+recommendations for after: 1  (~32 tok more savings possible)
+  • Drop 2 low-scoring RAG chunk(s) (~32 tok, ~$0.000160)
+```
+
+The compare output is **savings-first**: the first line is always the
+headline savings in tokens (+ USD), and the zone table walks you through
+**where** the bytes went.
+
+### 4. `token-lens demo` — the 60-second wow-factor demo
+
+```
+token-lens demo [options]
+
+  --before PATH        Override the BEFORE trace (default: examples/bloated_trace.json).
+  --after PATH         Override the AFTER  trace (default: examples/lean_trace.json).
+  --model NAME         Model identifier (default: gpt-4o).
+  --out-dir DIR        Directory for written artifacts (default: cwd).
+  --open               Open the AFTER HTML report in the browser.
+  --no-color           Disable ANSI color.
+```
+
+The demo command runs the bundled before/after pair end-to-end, prints the
+savings one-liner, and writes three artifacts you can drop into a PR:
+
+* `demo-before.html` — self-contained HTML treemap of the bloated trace
+* `demo-after.html`  — self-contained HTML treemap of the tight trace
+* `demo-compare.md`  — markdown summary (zone table + recommendations)
 
 ### 2. `token-lens serve` — local web app
 
@@ -251,7 +355,15 @@ Unrecognized keys are still walked; messages are picked up by `role` + `content`
 ## Python API
 
 ```python
-from token_lens import analyze_file, render_html, render_svg, build_server
+from token_lens import (
+    analyze_file,
+    render_html,
+    render_svg,
+    build_server,
+    build_recommendations,
+    compare_reports,
+    render_compare_markdown,
+)
 
 report = analyze_file(
     "trace.json",
@@ -259,9 +371,52 @@ report = analyze_file(
 )
 print(report.total_tokens, report.zones)
 
-html = render_html(report)      # str, self-contained
-svg = render_svg(report)        # str, standalone treemap
+# Heuristic, mechanical recommendations attached to every report
+for r in report.recommendations:
+    print(r.title, r.estimated_savings_tokens, r.confidence)
+
+html = render_html(report)             # str, self-contained
+svg = render_svg(report)               # str, standalone treemap
 # or: from token_lens.report import write_html, write_svg
+
+# Diff two reports, savings-first
+before = analyze_file("before.json", config={"model": "gpt-4o"})
+after = analyze_file("after.json", config={"model": "gpt-4o"})
+cmp = compare_reports(before, after)
+print(cmp.summary())
+md = render_compare_markdown(cmp)
+```
+
+### Recommendations API
+
+Every `AnalysisReport` carries a `recommendations: list[Recommendation]`
+field. Each recommendation has a `kind`, `zone`, `estimated_savings_tokens`,
+`estimated_savings_usd`, `confidence` (`high|medium|low`), `why`, and `how`:
+
+| `kind`                            | Targets zone  | Trigger                                       |
+| --------------------------------- | ------------- | --------------------------------------------- |
+| `drop_low_score_chunks`           | `rag`         | Chunks scoring < 0.20 vs. last user query     |
+| `drop_high_boilerplate_chunks`    | `rag`         | Chunks with boilerplate ratio >= 0.55         |
+| `reorder_around_lost_in_middle`   | `rag`         | 5+ chunks: middle ones likely wasted         |
+| `summarize_history`               | `history`     | History > 1,500 tokens                        |
+| `trim_tool_schema`                | `tool_schema` | Tool zone > 600 tokens                        |
+| `trim_few_shot`                   | `few_shot`    | Few-shot zone > 800 tokens                    |
+| `shorten_system_prompt`           | `system`      | System zone > 800 tokens                      |
+| `global_boilerplate_sweep`        | `rag`         | Aggregate boilerplate flagged                 |
+
+Use them directly:
+
+```python
+from token_lens import build_recommendations
+recs = build_recommendations(report)        # sorted by savings desc
+top3 = recs[:3]
+```
+
+Or, from the CLI:
+
+```bash
+token-lens analyze examples/bloated_trace.json --model gpt-4o --quiet
+# token-lens: 1,496 tokens, $0.007480 cost, savings available: ~915 tok (~$0.004575) [2 recommendation(s)]
 ```
 
 Embedding the server:
@@ -346,7 +501,7 @@ git clone https://github.com/aniketkarne-com/token-lens
 cd token-lens
 python3 -m venv .venv && source .venv/bin/activate
 pip install -e ".[test]"
-pytest                    # 62 tests
+pytest                    # 81 tests
 ```
 
 Smoke-test the server without leaving a process running:
@@ -359,21 +514,23 @@ Layout:
 
 ```
 token_lens/
-  __init__.py     # public API
+  __init__.py     # public API (analyze, render, server, recommend, compare)
   types.py        # dataclasses (MessageRecord, AnalysisReport, ChunkInfo, ...)
   parse.py        # trace walker + zone classifier
   tokenize.py     # tiktoken / transformers / heuristic fallback
   score.py        # n-gram / LCS / containment scorers
   boilerplate.py  # boilerplate ratio + positional penalty
   pricing.py      # cost lookup table
-  analyze.py      # analyze_trace + analyze_file
+  analyze.py      # analyze_trace + analyze_file (+ builds recommendations)
   report.py       # HTML + SVG treemap renderer (self-contained)
+  recommend.py    # heuristic, savings-first recommendation engine
+  compare.py      # CompareResult + render_compare_markdown
   server.py       # stdlib HTTP server: web UI + JSON API + artifact cache
-  cli.py          # argparse CLI: analyze / serve (+ legacy bare form)
+  cli.py          # argparse CLI: analyze / compare / demo / serve
   py.typed        # PEP 561 marker
 assets/           # hero.svg (served at /assets/hero.svg, used in this README)
-tests/            # 62 tests across parser, tokenizers, scoring, report, analyze, server
-examples/         # sample_trace.json, summary.json, treemap.svg
+tests/            # 81 tests across parser, tokenizers, scoring, report, analyze, server, recommend, compare, cli
+examples/         # sample_trace.json, bloated_trace.json, lean_trace.json, summary.json, treemap.svg
 ```
 
 ---

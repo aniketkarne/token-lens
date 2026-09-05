@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>token-lens report — gpt-4o</title>
+<style>
+:root {
+  color-scheme: dark;
+  --bg: #0f172a;
+  --bg-2: #1e293b;
+  --fg: #e2e8f0;
+  --muted: #94a3b8;
+  --accent: #38bdf8;
+  --warn: #f97316;
+  --danger: #ef4444;
+  --ok: #22c55e;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font: 14px/1.5 ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+header {
+  padding: 24px 32px;
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  border-bottom: 1px solid #334155;
+}
+header h1 {
+  margin: 0 0 6px;
+  font-size: 22px;
+  letter-spacing: -0.01em;
+}
+header .meta {
+  color: var(--muted);
+  font: 12px/1.5 ui-monospace, "JetBrains Mono", monospace;
+}
+main {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: 24px;
+  padding: 24px 32px;
+  max-width: 1280px;
+  margin: 0 auto;
+}
+section {
+  background: var(--bg-2);
+  border: 1px solid #334155;
+  border-radius: 10px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+section h2 {
+  margin: 0 0 12px;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+}
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 12px;
+}
+.kpi {
+  background: #0b1322;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  padding: 14px;
+}
+.kpi .k {
+  color: var(--muted);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.kpi .v {
+  font-size: 22px;
+  font-weight: 600;
+  margin-top: 4px;
+  font-variant-numeric: tabular-nums;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+th, td {
+  padding: 8px 10px;
+  text-align: left;
+  border-bottom: 1px solid #334155;
+}
+th {
+  color: var(--muted);
+  font-weight: 600;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.bar {
+  display: inline-block;
+  height: 8px;
+  border-radius: 4px;
+  background: var(--accent);
+  vertical-align: middle;
+}
+.zone-swatch {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+.warn { color: var(--warn); }
+.danger { color: var(--danger); }
+.ok { color: var(--ok); }
+.chunk-row.flagged {
+  background: rgba(239, 68, 68, 0.08);
+}
+details summary {
+  cursor: pointer;
+  color: var(--muted);
+}
+code {
+  background: #0b1322;
+  padding: 1px 6px;
+  border-radius: 4px;
+  font: 12px ui-monospace, "JetBrains Mono", monospace;
+}
+@media (max-width: 920px) {
+  main { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+<header>
+  <h1>token-lens report</h1>
+  <div class="meta">
+    model: <code>gpt-4o</code> ·
+    encoder: <code>heuristic-bpe-lite</code> ·
+    tokenizer_source: <code>fallback</code> ·
+    messages: 24 ·
+    generated: token-lens v0.2.0
+  </div>
+</header>
+<main>
+<div>
+  <section>
+    <h2>Token Usage Treemap</h2>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 360" role="img" aria-label="Token usage treemap" width="100%" height="auto" style="background:#0f172a;border-radius:8px;"><style>.tl-cell{stroke:#0f172a;stroke-width:2;cursor:default;}.tl-label{fill:#f8fafc;font:600 12px ui-sans-serif,system-ui,sans-serif;}.tl-sub{fill:#cbd5e1;font:500 10px ui-monospace,monospace;}</style><rect class="tl-cell" x="0.0" y="0.0" width="401.9" height="360.0" fill="#10b981" rx="4"><title>rag: 835 tokens (55.8%)</title></rect><text class="tl-label" x="8.0" y="16.0">rag</text><text class="tl-sub" x="8.0" y="28.0">835 tok (55.8%)</text><rect class="tl-cell" x="401.9" y="0.0" width="213.7" height="360.0" fill="#a855f7" rx="4"><title>tool_schema: 444 tokens (29.7%)</title></rect><text class="tl-label" x="409.9" y="16.0">tool_schema</text><text class="tl-sub" x="409.9" y="28.0">444 tok (29.7%)</text><rect class="tl-cell" x="615.6" y="0.0" width="95.8" height="186.3" fill="#ec4899" rx="4"><title>few_shot: 103 tokens (6.9%)</title></rect><text class="tl-label" x="623.6" y="16.0">few_shot</text><text class="tl-sub" x="623.6" y="28.0">103 tok (6.9%)</text><rect class="tl-cell" x="615.6" y="186.3" width="95.8" height="173.7" fill="#f59e0b" rx="4"><title>history: 96 tokens (6.4%)</title></rect><text class="tl-label" x="623.6" y="202.3">history</text><text class="tl-sub" x="623.6" y="214.3">96 tok (6.4%)</text><rect class="tl-cell" x="711.3" y="0.0" width="8.7" height="360.0" fill="#06b6d4" rx="4"><title>user: 18 tokens (1.2%)</title></rect></svg>
+  </section>
+  <section>
+    <h2>Zone Breakdown</h2>
+    <table><thead><tr><th>Zone</th><th>Messages</th><th>Tokens</th><th>%</th><th>Chars</th></tr></thead><tbody><tr><td><span class="zone-swatch" style="background:#a855f7"></span>tool_schema</td><td>1</td><td><span class="bar" style="width:59.4px"></span> 444</td><td>29.7%</td><td>1,378</td></tr><tr><td><span class="zone-swatch" style="background:#ec4899"></span>few_shot</td><td>6</td><td><span class="bar" style="width:13.8px"></span> 103</td><td>6.9%</td><td>524</td></tr><tr><td><span class="zone-swatch" style="background:#10b981"></span>rag</td><td>8</td><td><span class="bar" style="width:111.6px"></span> 835</td><td>55.8%</td><td>4,162</td></tr><tr><td><span class="zone-swatch" style="background:#f59e0b"></span>history</td><td>8</td><td><span class="bar" style="width:12.8px"></span> 96</td><td>6.4%</td><td>445</td></tr><tr><td><span class="zone-swatch" style="background:#06b6d4"></span>user</td><td>1</td><td><span class="bar" style="width:8.0px"></span> 18</td><td>1.2%</td><td>87</td></tr></tbody></table>
+  </section>
+  <section>
+    <h2>Chunk Utilization</h2>
+    <table><thead><tr><th>#</th><th>Pos</th><th>Tokens</th><th>Score</th><th>Method</th><th>Boilerplate</th><th>Pos. penalty</th><th>Preview</th></tr></thead><tbody><tr class="chunk-row"><td>0</td><td>0</td><td>143</td><td>0.151</td><td><code>containment</code></td><td>0.21</td><td>0.00</td><td><span title="Apples are red, green, or yellow fruits that grow on trees in temperate climates. They are high in fiber and vitamin C. The original wild ancestor, Malus sieversii, originated in Central Asia. Apples ">Apples are red, green, or yellow fruits that grow on trees in temperate climates. They are high in fiber and vitamin C. </span></td></tr><tr class="chunk-row"><td>1</td><td>1</td><td>118</td><td>0.235</td><td><code>containment</code></td><td>0.27</td><td>0.08</td><td><span title="Bananas are elongated yellow tropical fruits produced by several kinds of large herbaceous plants. They are rich in potassium. Bananas are also a good source of vitamin B6. Please note that bananas gr">Bananas are elongated yellow tropical fruits produced by several kinds of large herbaceous plants. They are rich in pota</span></td></tr><tr class="chunk-row"><td>2</td><td>2</td><td>94</td><td>0.123</td><td><code>containment</code></td><td>0.26</td><td>0.33</td><td><span title="Oranges are round citrus fruits high in vitamin C. The orange originated in Southeast Asia and was spread worldwide. Oranges are also rich in folate. The most common variety is the Valencia orange. Na">Oranges are round citrus fruits high in vitamin C. The orange originated in Southeast Asia and was spread worldwide. Ora</span></td></tr><tr class="chunk-row flagged"><td>3</td><td>3</td><td>93</td><td>0.111</td><td><code>containment</code></td><td>0.24</td><td>0.73</td><td><span title="Mangoes are drupe fruits from the Mangifera indica tree, native to South Asia. They are rich in vitamins A and C. Please also note that mangoes come in many varieties including Alphonso, Keitt, and To">Mangoes are drupe fruits from the Mangifera indica tree, native to South Asia. They are rich in vitamins A and C. Please</span></td></tr><tr class="chunk-row flagged"><td>4</td><td>4</td><td>115</td><td>0.184</td><td><code>containment</code></td><td>0.27</td><td>0.73</td><td><span title="The lost-in-the-middle effect: language models pay less attention to information in the middle of long contexts. Source: Liu et al., 2023. Please note that this is a well-established empirical finding">The lost-in-the-middle effect: language models pay less attention to information in the middle of long contexts. Source:</span></td></tr><tr class="chunk-row"><td>5</td><td>5</td><td>84</td><td>0.125</td><td><code>containment</code></td><td>0.27</td><td>0.33</td><td><span title="Random chunk about bird taxonomy: pigeons are birds in the order Columbiformes. This is unrelated to fruit. Please also note that penguin taxonomy is in the order Sphenisciformes. This chunk was retri">Random chunk about bird taxonomy: pigeons are birds in the order Columbiformes. This is unrelated to fruit. Please also </span></td></tr><tr class="chunk-row"><td>6</td><td>6</td><td>98</td><td>0.212</td><td><code>containment</code></td><td>0.32</td><td>0.08</td><td><span title="Insurance policy boilerplate: this is a placeholder text from a corporate document. Section 1 of 200. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Please note that this is filler. Please a">Insurance policy boilerplate: this is a placeholder text from a corporate document. Section 1 of 200. Lorem ipsum dolor </span></td></tr><tr class="chunk-row"><td>7</td><td>7</td><td>90</td><td>0.237</td><td><code>containment</code></td><td>0.29</td><td>0.00</td><td><span title="Marketing copy: please also be advised that the very best fruit is the fruit that you enjoy eating. The customer is always right. Hello and welcome. We are delighted to serve you. Kindly remember to s">Marketing copy: please also be advised that the very best fruit is the fruit that you enjoy eating. The customer is alwa</span></td></tr></tbody></table>
+  </section>
+  <section>
+    <h2>Messages (24)</h2>
+    <table><thead><tr><th>#</th><th>Zone</th><th>Role</th><th>Tokens</th><th>Chars</th><th>Source</th><th>Preview</th></tr></thead><tbody><tr><td>0</td><td><span class="zone-swatch" style="background:#a855f7"></span>tool_schema</td><td><code>tool_schema</code></td><td>444</td><td>1,378</td><td><code>tools</code></td><td><span title="[{&quot;type&quot;: &quot;function&quot;, &quot;function&quot;: {&quot;name&quot;: &quot;lookup_fruit&quot;, &quot;description&quot;: &quot;Look up nutrition facts for a fruit by name. This function retrieves detailed nutrition information from the upstream knowledge base and supports optional filters.&quot;, &quot;parameters&quot;: {&quot;type&quot;: &quot;object&quot;, &quot;properties&quot;: {&quot;name&quot;: {&quot;t">[{&quot;type&quot;: &quot;function&quot;, &quot;function&quot;: {&quot;name&quot;: &quot;lookup_fruit&quot;, &quot;description&quot;: &quot;Look up nutrition facts for a fruit by name. This function retrieves detailed nutriti</span></td></tr><tr><td>1</td><td><span class="zone-swatch" style="background:#ec4899"></span>few_shot</td><td><code>example</code></td><td>21</td><td>94</td><td><code>few_shot_examples[0]</code></td><td><span title="What is a fruit?
+A fruit is the seed-bearing structure of a flowering plant, typically edible.">What is a fruit? A fruit is the seed-bearing structure of a flowering plant, typically edible.</span></td></tr><tr><td>2</td><td><span class="zone-swatch" style="background:#ec4899"></span>few_shot</td><td><code>example</code></td><td>17</td><td>90</td><td><code>few_shot_examples[1]</code></td><td><span title="Are bananas berries?
+Yes, botanically bananas qualify as berries, but strawberries do not.">Are bananas berries? Yes, botanically bananas qualify as berries, but strawberries do not.</span></td></tr><tr><td>3</td><td><span class="zone-swatch" style="background:#ec4899"></span>few_shot</td><td><code>example</code></td><td>14</td><td>87</td><td><code>few_shot_examples[2]</code></td><td><span title="What about strawberries?
+Strawberries are aggregate accessory fruits, not true berries.">What about strawberries? Strawberries are aggregate accessory fruits, not true berries.</span></td></tr><tr><td>4</td><td><span class="zone-swatch" style="background:#ec4899"></span>few_shot</td><td><code>example</code></td><td>11</td><td>49</td><td><code>few_shot_examples[3]</code></td><td><span title="Are grapes berries?
+Yes, grapes are true berries.">Are grapes berries? Yes, grapes are true berries.</span></td></tr><tr><td>5</td><td><span class="zone-swatch" style="background:#ec4899"></span>few_shot</td><td><code>example</code></td><td>11</td><td>58</td><td><code>few_shot_examples[4]</code></td><td><span title="Are tomatoes fruits?
+Yes, tomatoes are botanically fruits.">Are tomatoes fruits? Yes, tomatoes are botanically fruits.</span></td></tr><tr><td>6</td><td><span class="zone-swatch" style="background:#ec4899"></span>few_shot</td><td><code>example</code></td><td>29</td><td>146</td><td><code>few_shot_examples[5]</code></td><td><span title="What is the difference between a fruit and a vegetable?
+Botanically, fruit is the mature ovary of a flowering plant; vegetable is a culinary term.">What is the difference between a fruit and a vegetable? Botanically, fruit is the mature ovary of a flowering plant; vegetable is a culinary term.</span></td></tr><tr><td>7</td><td><span class="zone-swatch" style="background:#10b981"></span>rag</td><td><code>document</code></td><td>143</td><td>731</td><td><code>context_docs[0]</code></td><td><span title="Apples are red, green, or yellow fruits that grow on trees in temperate climates. They are high in fiber and vitamin C. The original wild ancestor, Malus sieversii, originated in Central Asia. Apples are members of the Rosaceae family. The apple tree was brought to North America by European colonist">Apples are red, green, or yellow fruits that grow on trees in temperate climates. They are high in fiber and vitamin C. The original wild ancestor, Malus siever</span></td></tr><tr><td>8</td><td><span class="zone-swatch" style="background:#10b981"></span>rag</td><td><code>document</code></td><td>118</td><td>593</td><td><code>context_docs[1]</code></td><td><span title="Bananas are elongated yellow tropical fruits produced by several kinds of large herbaceous plants. They are rich in potassium. Bananas are also a good source of vitamin B6. Please note that bananas grow in bunches. The banana plant is actually not a tree but an herb. The largest producers of bananas">Bananas are elongated yellow tropical fruits produced by several kinds of large herbaceous plants. They are rich in potassium. Bananas are also a good source of</span></td></tr><tr><td>9</td><td><span class="zone-swatch" style="background:#10b981"></span>rag</td><td><code>document</code></td><td>94</td><td>494</td><td><code>context_docs[2]</code></td><td><span title="Oranges are round citrus fruits high in vitamin C. The orange originated in Southeast Asia and was spread worldwide. Oranges are also rich in folate. The most common variety is the Valencia orange. Navel oranges are seedless. Blood oranges have red flesh. Please note that orange juice is a popular b">Oranges are round citrus fruits high in vitamin C. The orange originated in Southeast Asia and was spread worldwide. Oranges are also rich in folate. The most c</span></td></tr><tr><td>10</td><td><span class="zone-swatch" style="background:#10b981"></span>rag</td><td><code>document</code></td><td>93</td><td>469</td><td><code>context_docs[3]</code></td><td><span title="Mangoes are drupe fruits from the Mangifera indica tree, native to South Asia. They are rich in vitamins A and C. Please also note that mangoes come in many varieties including Alphonso, Keitt, and Tommy Atkins. Mangoes are used widely in chutneys and pickles. India is the largest producer of mangoe">Mangoes are drupe fruits from the Mangifera indica tree, native to South Asia. They are rich in vitamins A and C. Please also note that mangoes come in many var</span></td></tr><tr><td>11</td><td><span class="zone-swatch" style="background:#10b981"></span>rag</td><td><code>document</code></td><td>115</td><td>528</td><td><code>context_docs[4]</code></td><td><span title="The lost-in-the-middle effect: language models pay less attention to information in the middle of long contexts. Source: Liu et al., 2023. Please note that this is a well-established empirical finding. The effect is most pronounced when the context window is fully populated. Please also note that re">The lost-in-the-middle effect: language models pay less attention to information in the middle of long contexts. Source: Liu et al., 2023. Please note that this</span></td></tr><tr><td>12</td><td><span class="zone-swatch" style="background:#10b981"></span>rag</td><td><code>document</code></td><td>84</td><td>410</td><td><code>context_docs[5]</code></td><td><span title="Random chunk about bird taxonomy: pigeons are birds in the order Columbiformes. This is unrelated to fruit. Please also note that penguin taxonomy is in the order Sphenisciformes. This chunk was retrieved because of the word &#x27;note&#x27; but is otherwise irrelevant. https://example.com/birds. Hello and we">Random chunk about bird taxonomy: pigeons are birds in the order Columbiformes. This is unrelated to fruit. Please also note that penguin taxonomy is in the ord</span></td></tr><tr><td>13</td><td><span class="zone-swatch" style="background:#10b981"></span>rag</td><td><code>document</code></td><td>98</td><td>497</td><td><code>context_docs[6]</code></td><td><span title="Insurance policy boilerplate: this is a placeholder text from a corporate document. Section 1 of 200. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Please note that this is filler. Please also note that this is boilerplate. Hello and welcome to the terms of service. The terms of service m">Insurance policy boilerplate: this is a placeholder text from a corporate document. Section 1 of 200. Lorem ipsum dolor sit amet, consectetur adipiscing elit. P</span></td></tr><tr><td>14</td><td><span class="zone-swatch" style="background:#10b981"></span>rag</td><td><code>document</code></td><td>90</td><td>440</td><td><code>context_docs[7]</code></td><td><span title="Marketing copy: please also be advised that the very best fruit is the fruit that you enjoy eating. The customer is always right. Hello and welcome. We are delighted to serve you. Kindly remember to smile. The fruit is fresh. The fruit is local. The fruit is organic. Please also note that this is fi">Marketing copy: please also be advised that the very best fruit is the fruit that you enjoy eating. The customer is always right. Hello and welcome. We are deli</span></td></tr><tr><td>15</td><td><span class="zone-swatch" style="background:#f59e0b"></span>history</td><td><code>user</code></td><td>8</td><td>32</td><td><code>chat_history[0]</code></td><td><span title="Earlier: what counts as a fruit?">Earlier: what counts as a fruit?</span></td></tr><tr><td>16</td><td><span class="zone-swatch" style="background:#f59e0b"></span>history</td><td><code>assistant</code></td><td>17</td><td>88</td><td><code>chat_history[1]</code></td><td><span title="Botanically, a fruit is the mature ovary of a flowering plant, usually containing seeds.">Botanically, a fruit is the mature ovary of a flowering plant, usually containing seeds.</span></td></tr><tr><td>17</td><td><span class="zone-swatch" style="background:#f59e0b"></span>history</td><td><code>user</code></td><td>9</td><td>29</td><td><code>chat_history[2]</code></td><td><span title="And how do I pick a ripe one?">And how do I pick a ripe one?</span></td></tr><tr><td>18</td><td><span class="zone-swatch" style="background:#f59e0b"></span>history</td><td><code>assistant</code></td><td>19</td><td>86</td><td><code>chat_history[3]</code></td><td><span title="Look for bright color, slight give when pressed, and a fragrant aroma at the stem end.">Look for bright color, slight give when pressed, and a fragrant aroma at the stem end.</span></td></tr><tr><td>19</td><td><span class="zone-swatch" style="background:#f59e0b"></span>history</td><td><code>user</code></td><td>4</td><td>19</td><td><code>chat_history[4]</code></td><td><span title="What about storage?">What about storage?</span></td></tr><tr><td>20</td><td><span class="zone-swatch" style="background:#f59e0b"></span>history</td><td><code>assistant</code></td><td>19</td><td>111</td><td><code>chat_history[5]</code></td><td><span title="Most fruit keeps best refrigerated; bananas and tomatoes are exceptions and should be kept at room temperature.">Most fruit keeps best refrigerated; bananas and tomatoes are exceptions and should be kept at room temperature.</span></td></tr><tr><td>21</td><td><span class="zone-swatch" style="background:#f59e0b"></span>history</td><td><code>user</code></td><td>9</td><td>38</td><td><code>chat_history[6]</code></td><td><span title="Thanks! Now back to the main question.">Thanks! Now back to the main question.</span></td></tr><tr><td>22</td><td><span class="zone-swatch" style="background:#f59e0b"></span>history</td><td><code>assistant</code></td><td>11</td><td>42</td><td><code>chat_history[7]</code></td><td><span title="You&#x27;re welcome — happy to keep digging in.">You&#x27;re welcome — happy to keep digging in.</span></td></tr><tr><td>23</td><td><span class="zone-swatch" style="background:#06b6d4"></span>user</td><td><code>user</code></td><td>18</td><td>87</td><td><code>messages[0]</code></td><td><span title="Compare the nutritional profile of apples vs. bananas. Which is better for a long hike?">Compare the nutritional profile of apples vs. bananas. Which is better for a long hike?</span></td></tr></tbody></table>
+  </section>
+</div>
+<aside>
+  <section>
+    <h2>Totals</h2>
+    <div class="kpi-grid">
+      <div class="kpi"><div class="k">Total tokens</div><div class="v ">1,496</div></div>
+      <div class="kpi"><div class="k">Total chars</div><div class="v ">6,596</div></div>
+      <div class="kpi"><div class="k">Messages</div><div class="v ">24</div></div>
+      <div class="kpi"><div class="k">Est. cost</div><div class="v ">$0.007480</div></div>
+      <div class="kpi"><div class="k">Price model</div><div class="v ">gpt-4o@$0.00500/1K</div></div>
+      <div class="kpi"><div class="k">Boilerplate risk</div><div class="v ok">OK</div></div>
+      <div class="kpi"><div class="k">Flagged chunks</div><div class="v ">2</div></div>
+      <div class="kpi"><div class="k">Flagged tokens</div><div class="v ">208</div></div>
+    </div>
+  </section>
+  <section>
+    <h2>Config</h2>
+    <pre style="white-space:pre-wrap;color:var(--muted);font:12px ui-monospace,monospace;">{
+  &quot;model&quot;: &quot;gpt-4o&quot;,
+  &quot;price_per_1k&quot;: null
+}</pre>
+  </section>
+  
+</aside>
+</main>
+</body>
+</html>

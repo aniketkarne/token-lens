@@ -1,0 +1,45 @@
+{
+  "model": "gpt-4o",
+  "system_prompt": "You are a nutritionist answering fruit questions. Cite sources. If unsure, say so.",
+  "tools": [
+    {
+      "type": "function",
+      "function": {
+        "name": "lookup_fruit",
+        "description": "Look up nutrition facts for a fruit.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "Fruit name"
+            }
+          },
+          "required": [
+            "name"
+          ]
+        }
+      }
+    }
+  ],
+  "few_shot_examples": [
+    {
+      "input": "What is a fruit?",
+      "output": "The mature ovary of a flowering plant, usually containing seeds."
+    }
+  ],
+  "context_docs": [
+    {
+      "text": "Apples are red, green, or yellow temperate fruits, high in fiber and vitamin C."
+    },
+    {
+      "text": "Bananas are elongated yellow tropical fruits, rich in potassium and vitamin B6."
+    }
+  ],
+  "messages": [
+    {
+      "role": "user",
+      "content": "Compare the nutritional profile of apples vs. bananas. Which is better for a long hike?"
+    }
+  ]
+}
