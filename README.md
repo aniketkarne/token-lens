@@ -7,7 +7,8 @@
 > Zero network. Zero CDN. Python stdlib only.
 
 <p align="center">
-  <img src="assets/hero.svg" alt="token-lens zone treemap" width="520">
+ <img width="1195" height="596" alt="image" src="https://github.com/user-attachments/assets/2d9824be-3df0-4272-a760-e3820f6dfcb7" />
+
 </p>
 
 ```
