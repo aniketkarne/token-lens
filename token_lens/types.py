@@ -147,6 +147,7 @@ class AnalysisReport:
     tokenizer_backend: TokenizerBackend = TokenizerBackend.HEURISTIC
     tokenizer_name: str = "heuristic-v1"
     is_approximate: bool = True
+    ablation: AblationResult | None = None
 
     def zone(self, kind: ZoneKind) -> ZoneBreakdown | None:
         for z in self.zones:
@@ -209,6 +210,26 @@ class AnalysisReport:
                 "avg_positional_penalty": self.boilerplate.avg_positional_penalty,
                 "high_risk": self.boilerplate.high_risk,
             },
+            "ablation": (
+                {
+                    "chunks": [
+                        {
+                            "index": c.index,
+                            "chunk_id": c.chunk_id,
+                            "tokens": c.tokens,
+                            "query_similarity": c.query_similarity,
+                            "redundancy": c.redundancy,
+                            "usefulness": c.usefulness,
+                            "verdict": c.verdict,
+                        }
+                        for c in self.ablation.chunks
+                    ],
+                    "potential_removal_tokens": self.ablation.potential_removal_tokens,
+                    "estimated_quality_delta": self.ablation.estimated_quality_delta,
+                }
+                if self.ablation is not None
+                else None
+            ),
             "warnings": list(self.warnings),
             "recommendations": [
                 r.to_dict() for r in (self.recommendations or [])

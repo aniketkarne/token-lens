@@ -20,6 +20,7 @@ from .types import (
     ZoneBreakdown,
     ZoneKind,
 )
+from .ablation import score_chunk_usefulness
 
 
 def _encoder_to_backend(source: str, custom_used: bool):
@@ -139,6 +140,15 @@ def analyze_trace(trace: Any, config: Mapping[str, Any] | None = None) -> Analys
     chunks, _query = _build_chunks(messages, encoder)
     boiler = aggregate_risk(chunks) if chunks else aggregate_risk([])
 
+    # Ablation: score RAG chunks (identified by metadata.zone=="rag") against
+    # the last user/human message as the query. None when no RAG zone present.
+    ablation = None
+    rag_chunks = [m for m in messages if (m.metadata or {}).get("zone") == "rag"]
+    if rag_chunks:
+        user_msgs = [m for m in messages if m.role in ("user", "human")]
+        query = user_msgs[-1].content if user_msgs else ""
+        ablation = score_chunk_usefulness(rag_chunks, query)
+
     cost, cost_label = estimate_cost(model, total_tokens, price_override)
 
     base = AnalysisReport(
@@ -159,6 +169,7 @@ def analyze_trace(trace: Any, config: Mapping[str, Any] | None = None) -> Analys
         tokenizer_backend=backend,
         tokenizer_name=encoder.name,
         is_approximate=is_approx,
+        ablation=ablation,
     )
     # Recommendations need cost/zone info but live on the report itself.
     base.recommendations = build_recommendations(base)
