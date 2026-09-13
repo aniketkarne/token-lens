@@ -56,3 +56,51 @@ def test_verdict_thresholds():
     verdicts = [c.verdict for c in r.chunks]
     assert "useful" in verdicts or "marginal" in verdicts
     assert "irrelevant" in verdicts
+
+
+def test_near_duplicate_chunks_have_high_redundancy():
+    from token_lens.ablation import score_chunk_usefulness
+    from token_lens.types import MessageRecord, ZoneKind
+
+    def _m(content, tokens):
+        return MessageRecord(index=0, role="system", content=content, zone=ZoneKind.RAG,
+                            source="rag", token_count=tokens, metadata={})
+
+    chunks = [
+        _m("The capital of France is Paris.", 8),
+        _m("The capital city of France is Paris.", 9),
+        _m("Bananas are yellow tropical fruits.", 6),
+    ]
+    r = score_chunk_usefulness(chunks, query="What is the capital of France?")
+    assert r.chunks[0].redundancy > 0.5 or r.chunks[1].redundancy > 0.5
+    verdicts = {r.chunks[0].verdict, r.chunks[1].verdict}
+    assert "marginal" in verdicts or "irrelevant" in verdicts
+
+
+def test_unique_chunk_has_low_redundancy():
+    from token_lens.ablation import score_chunk_usefulness
+    from token_lens.types import MessageRecord, ZoneKind
+
+    def _m(content, tokens):
+        return MessageRecord(index=0, role="system", content=content, zone=ZoneKind.RAG,
+                            source="rag", token_count=tokens, metadata={})
+
+    chunks = [
+        _m("Apples are red fruits that grow on trees.", 10),
+        _m("Completely unrelated quantum mechanics paper from 1973.", 8),
+    ]
+    r = score_chunk_usefulness(chunks, query="Tell me about apples")
+    assert r.chunks[0].redundancy < 0.5
+
+
+def test_single_chunk_has_zero_redundancy():
+    from token_lens.ablation import score_chunk_usefulness
+    from token_lens.types import MessageRecord, ZoneKind
+
+    def _m(content, tokens):
+        return MessageRecord(index=0, role="system", content=content, zone=ZoneKind.RAG,
+                            source="rag", token_count=tokens, metadata={})
+
+    chunks = [_m("The only chunk here.", 6)]
+    r = score_chunk_usefulness(chunks, query="anything")
+    assert r.chunks[0].redundancy == 0.0
