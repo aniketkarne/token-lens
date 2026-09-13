@@ -76,6 +76,18 @@ def _build_parser() -> argparse.ArgumentParser:
                       help="Open the HTML report in the default browser")
     p_an.add_argument("--quiet", action="store_true",
                       help="Print only the savings-first one-liner")
+    p_an.add_argument(
+        "--tokenizer", default=None,
+        help="Explicit tokenizer name (overrides --model for tokenizer selection)",
+    )
+    p_an.add_argument(
+        "--custom-tokenizer", default=None,
+        help="Path to a local HF-format tokenizer.json (overrides --tokenizer and --model)",
+    )
+    p_an.add_argument(
+        "--no-color", action="store_true",
+        help="Disable ANSI color in output",
+    )
 
     # compare
     p_cmp = sub.add_parser(
@@ -262,7 +274,12 @@ def _analyze_print_savings(report, use_color: bool = True, quiet: bool = False) 
 
 
 def _run_analyze(args: argparse.Namespace) -> int:
-    config = {"model": args.model, "price_per_1k": args.price_per_1k}
+    config = {
+        "model": args.model,
+        "price_per_1k": args.price_per_1k,
+        "tokenizer": getattr(args, "tokenizer", None),
+        "custom_tokenizer_path": getattr(args, "custom_tokenizer", None),
+    }
     try:
         report = analyze_file(args.trace, config=config)
     except FileNotFoundError:

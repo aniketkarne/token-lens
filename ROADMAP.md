@@ -16,7 +16,7 @@ Legend: `[ ]` pending · `[~]` in progress · `[x]` done · `[!]` blocked
 - [x] Task 1.1 — `TokenizerBackend` enum + `AnalysisReport` fields
 - [x] Task 1.2 — HuggingFace `tokenizers` adapter + custom file loader
 - [x] Task 1.3 — Report renders backend label + `⚠ approximate` badge
-- [ ] Task 1.4 — CLI `--tokenizer` + `--custom-tokenizer` flags
+- [x] Task 1.4 — CLI `--tokenizer` + `--custom-tokenizer` flags
 - [ ] Task 1.5 — Phase 1 verification
 
 ### Phase 2 — `token-lens init` Scaffolding

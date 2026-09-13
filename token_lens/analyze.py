@@ -22,6 +22,18 @@ from .types import (
 )
 
 
+def _encoder_to_backend(source: str, custom_used: bool):
+    """Map a TokenEncoder.source label + custom_used flag to (TokenizerBackend, is_approximate)."""
+    from .types import TokenizerBackend
+    if custom_used:
+        return TokenizerBackend.CUSTOM, False
+    if source == "tiktoken":
+        return TokenizerBackend.TIKTOKEN, False
+    if source in ("transformers", "tokenizers"):
+        return TokenizerBackend.HUGGINGFACE, False
+    return TokenizerBackend.HEURISTIC, True
+
+
 _ZONE_ORDER: list[ZoneKind] = [
     ZoneKind.SYSTEM,
     ZoneKind.TOOL_SCHEMA,
@@ -104,9 +116,13 @@ def analyze_trace(trace: Any, config: Mapping[str, Any] | None = None) -> Analys
 
     cfg = dict(config or {})
     model = str(cfg.get("model") or (trace.get("model") if isinstance(trace, dict) else "") or "")
+    tokenizer_override = cfg.get("tokenizer") or model
+    custom_path = cfg.get("custom_tokenizer_path")
     price_override = cfg.get("price_per_1k")
 
-    encoder = resolve_encoder(model)
+    encoder = resolve_encoder(tokenizer_override, custom_path=custom_path)
+    custom_used = bool(custom_path) and encoder.source == "tokenizers" and ("custom" in encoder.name.lower())
+    backend, is_approx = _encoder_to_backend(encoder.source, custom_used)
     warnings: list[str] = []
     messages = parse_trace(trace)
     if not messages:
@@ -140,6 +156,9 @@ def analyze_trace(trace: Any, config: Mapping[str, Any] | None = None) -> Analys
         boilerplate=boiler,
         config=cfg,
         warnings=warnings,
+        tokenizer_backend=backend,
+        tokenizer_name=encoder.name,
+        is_approximate=is_approx,
     )
     # Recommendations need cost/zone info but live on the report itself.
     base.recommendations = build_recommendations(base)
