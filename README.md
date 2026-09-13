@@ -536,6 +536,93 @@ examples/         # sample_trace.json, bloated_trace.json, lean_trace.json, summ
 
 ---
 
+## Roadmap
+
+token-lens is shifting from **token visualization** to **context optimization**.
+The new thesis: *"Which context is costing me money without improving answer
+quality?"* — find the minimum context needed to preserve answer quality.
+
+The full plan lives in [`ROADMAP.md`](ROADMAP.md). Progress checklist below —
+updated as phases ship.
+
+Legend: `[ ]` pending · `[~]` in progress · `[x]` done · `[!]` blocked
+
+### Phase 1 — Real Tokenizer Backends
+- [ ] Task 1.1 — `TokenizerBackend` enum + `AnalysisReport` fields
+- [ ] Task 1.2 — HuggingFace `tokenizers` adapter + custom file loader
+- [ ] Task 1.3 — Report renders backend label + `⚠ approximate` badge
+- [ ] Task 1.4 — CLI `--tokenizer` + `--custom-tokenizer` flags
+- [ ] Task 1.5 — Phase 1 verification
+
+### Phase 2 — `token-lens init` Scaffolding
+- [ ] Task 2.1 — Template files (`token-lens.yaml`, CI snippet, sample trace)
+- [ ] Task 2.2 — `scaffold.py` + `init` subcommand
+- [ ] Task 2.3 — Phase 2 verification
+
+### Phase 3 — Token Budget CI
+- [ ] Task 3.1 — `BudgetConfig` + YAML loader
+- [ ] Task 3.2 — Breach checker
+- [ ] Task 3.3 — `token-lens check` CLI (exit codes)
+- [ ] Task 3.4 — Web `/api/budget/check`
+- [ ] Task 3.5 — Phase 3 verification
+
+### Phase 4 — RAG Chunk Ablation (Heuristic)
+- [ ] Task 4.1 — `ChunkUsefulness` + `AblationResult` types
+- [ ] Task 4.2 — Embedding backend (lazy + cache + hash fallback)
+- [ ] Task 4.3 — Chunk usefulness scorer
+- [ ] Task 4.4 — Cross-chunk redundancy detection
+- [ ] Task 4.5 — Estimated quality delta
+- [ ] Task 4.6 — Parse RAG chunks from traces
+- [ ] Task 4.7 — `analyze` returns ablation result
+- [ ] Task 4.8 — Report renders ablation table
+- [ ] Task 4.9 — CLI `ablation` subcommand
+- [ ] Task 4.10 — Phase 4 verification
+
+### Phase 5 — Live Trace Ingest (JSONL Tail)
+- [ ] Task 5.1 — SQLite schema + `TraceStore`
+- [ ] Task 5.2 — Provider normalizer (OpenAI/Anthropic/Generic)
+- [ ] Task 5.3 — JSONL tail with offset checkpointing
+- [ ] Task 5.4 — `token-lens ingest` CLI
+- [ ] Task 5.5 — `token-lens stats` aggregates
+- [ ] Task 5.6 — Web `/api/stats` + `/api/ingest`
+- [ ] Task 5.7 — Phase 5 verification
+
+### Phase 6 — Live Trace Ingest (Langfuse Pull)
+- [ ] Task 6.1 — Langfuse client (paginated)
+- [ ] Task 6.2 — CLI `--langfuse` flag
+- [ ] Task 6.3 — Phase 6 verification
+
+### Phase 7 — Live Trace Ingest (Otel Receiver)
+- [ ] Task 7.1 — OTLP gRPC receiver skeleton
+- [ ] Task 7.2 — OTel GenAI semconv → trace
+- [ ] Task 7.3 — CLI `--otel` flag
+- [ ] Task 7.4 — Phase 7 verification
+
+### Phase 8 — Evidence-Based Recommendations + Pareto Frontier
+- [ ] Task 8.1 — `CrossTraceRecommendation` + `ParetoPoint` types
+- [ ] Task 8.2 — Ablation persistence in store
+- [ ] Task 8.3 — Cross-trace recommendation engine
+- [ ] Task 8.4 — Pareto frontier computation
+- [ ] Task 8.5 — CLI `optimize` subcommand
+- [ ] Task 8.6 — Pareto SVG renderer
+- [ ] Task 8.7 — Phase 8 verification
+
+### Phase 9 — Web App: Budget / Live / Optimize Pages
+- [ ] Task 9.1 — `/budget` page
+- [ ] Task 9.2 — `/live` page
+- [ ] Task 9.3 — `/optimize` page
+- [ ] Task 9.4 — Navigation links
+- [ ] Task 9.5 — Phase 9 verification
+
+### Phase 10 — README + Hero + v1.0.0 Release
+- [ ] Task 10.1 — README rewrite (lead with thesis)
+- [ ] Task 10.2 — Hero SVG refresh
+- [ ] Task 10.3 — CHANGELOG.md
+- [ ] Task 10.4 — Bump to 1.0.0, tag, push
+- [ ] Task 10.5 — Phase 10 verification + final smoke
+
+---
+
 ## License
 
 MIT
