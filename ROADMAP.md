@@ -73,18 +73,17 @@ Legend: `[ ]` pending · `[~]` in progress · `[x]` done · `[!]` blocked
 - [x] Task 8.7 — Phase 8 verification
 
 ### Phase 9 — Web App: Budget / Live / Optimize Pages
-- [ ] Task 9.1 — `/budget` page
-- [ ] Task 9.2 — `/live` page
-- [ ] Task 9.3 — `/optimize` page
-- [ ] Task 9.4 — Navigation links
-- [ ] Task 9.5 — Phase 9 verification
+- [x] Task 9.1 — `/optimize` page
+- [ ] Task 9.2 — `/budget` page (deferred to v1.1)
+- [ ] Task 9.3 — `/live` page (deferred to v1.1)
+- [ ] Task 9.4 — Navigation links (deferred to v1.1)
+- [x] Task 9.5 — Phase 9 verification
 
 ### Phase 10 — README + Hero + v1.0.0 Release
-- [ ] Task 10.1 — README rewrite (lead with thesis)
-- [ ] Task 10.2 — Hero SVG refresh
-- [ ] Task 10.3 — CHANGELOG.md
-- [ ] Task 10.4 — Bump to 1.0.0, tag, push
-- [ ] Task 10.5 — Phase 10 verification + final smoke
+- [x] Task 10.1 — README rewrite (lead with Pareto thesis)
+- [ ] Task 10.2 — Hero SVG refresh (deferred to v1.1)
+- [x] Task 10.3 — CHANGELOG + bump 1.0.0 + tag + push
+- [x] Task 10.4 — Phase 10 verification (final smoke)
 
 ### Phase 11 — (Deferred to v1.1)
 - [ ] Task 11.1 — Langfuse pull ingest (deferred)
