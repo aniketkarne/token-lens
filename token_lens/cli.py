@@ -108,6 +108,14 @@ def _build_parser() -> argparse.ArgumentParser:
     p_chk.add_argument("--json", default=None, help="Write a JSON breach report to this path")
     p_chk.add_argument("trace", nargs="+", help="One or more trace files (JSON or JSONL); globs are expanded")
 
+    # ablation
+    p_abl = sub.add_parser(
+        "ablation",
+        help="Show per-chunk RAG ablation scoring for a trace",
+    )
+    p_abl.add_argument("trace", help="Path to a trace JSON file")
+    p_abl.add_argument("--no-color", action="store_true", help="Disable ANSI color in output")
+
     # compare
     p_cmp = sub.add_parser(
         "compare",
@@ -307,6 +315,35 @@ def _run_init(args: argparse.Namespace) -> int:
         except ValueError:
             rel = p
         print(f"  wrote: {rel}")
+    return 0
+
+
+def _run_ablation(args: argparse.Namespace) -> int:
+    from .analyze import analyze_file
+
+    trace_path = Path(args.trace)
+    if not trace_path.exists():
+        print("error: trace file not found: " + str(trace_path), file=sys.stderr)
+        return 2
+    try:
+        report = analyze_file(str(trace_path))
+    except Exception as exc:
+        print("error: failed to analyze trace: " + str(exc), file=sys.stderr)
+        return 2
+
+    if report.ablation is None or not report.ablation.chunks:
+        print("token-lens ablation: " + str(trace_path))
+        print("  no RAG chunks found — nothing to score.")
+        return 0
+
+    abl = report.ablation
+    print("token-lens ablation: " + str(trace_path))
+    print("  " + "chunk_id".ljust(14) + " " + "tokens".rjust(8) + "  " + "useful".rjust(6) + "  verdict")
+    for c in abl.chunks:
+        cid = c.chunk_id or "(no id)"
+        print("  " + cid.ljust(14) + " " + str(c.tokens).rjust(8) + "  " + ("%.2f" % c.usefulness).rjust(6) + "  " + c.verdict)
+    print()
+    print("  potential_removal_tokens=" + str(abl.potential_removal_tokens) + "  estimated_quality_delta=" + ("%+.3f" % abl.estimated_quality_delta))
     return 0
 
 
@@ -664,7 +701,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     if argv is None:
         argv = sys.argv[1:]
 
-    if argv and argv[0] in {"analyze", "serve", "compare", "demo", "init", "check", "-h", "--help"}:
+    if argv and argv[0] in {"analyze", "serve", "compare", "demo", "init", "check", "ablation", "-h", "--help"}:
         parser = _build_parser()
         args = parser.parse_args(argv)
         if args.cmd == "analyze":
@@ -679,6 +716,8 @@ def main(argv: Sequence[str] | None = None) -> int:
             return _run_init(args)
         elif args.cmd == "check":
             return _run_check(args)
+        elif args.cmd == "ablation":
+            return _run_ablation(args)
         parser.print_help()
         return 1
 
