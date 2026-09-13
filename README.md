@@ -602,9 +602,9 @@ Legend: `[ ]` pending · `[~]` in progress · `[x]` done · `[!]` blocked
 - [x] Task 8.1 — `CrossTraceRecommendation` + `ParetoPoint` types
 - [x] Task 8.2 — Ablation persistence in store
 - [x] Task 8.3 — Cross-trace recommendation engine
-- [ ] Task 8.4 — Pareto frontier computation
-- [ ] Task 8.5 — CLI `optimize` subcommand
-- [ ] Task 8.6 — Pareto SVG renderer
+- [x] Task 8.4 — Pareto frontier computation
+- [x] Task 8.5 — CLI `optimize` subcommand
+- [x] Task 8.6 — Pareto SVG renderer
 - [ ] Task 8.7 — Phase 8 verification
 
 ### Phase 9 — Web App: Budget / Live / Optimize Pages

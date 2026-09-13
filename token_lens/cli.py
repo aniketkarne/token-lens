@@ -144,6 +144,16 @@ def _build_parser() -> argparse.ArgumentParser:
     p_st.add_argument("--last", type=int, default=100, help="Lookback window in traces (default: 100)")
     p_st.add_argument("--db", default=None, help="Path to the SQLite store")
 
+    # optimize
+    p_opt = sub.add_parser(
+        "optimize",
+        help="Aggregate stats and show cross-trace Pareto frontier + recommendations",
+    )
+    p_opt.add_argument("--db", default=None, help="Path to the SQLite store")
+    p_opt.add_argument("--max-points", type=int, default=10, help="Max points on the Pareto curve (default: 10)")
+    p_opt.add_argument("--min-coverage", type=float, default=0.9, help="Min trace coverage to recommend a chunk (default: 0.9)")
+    p_opt.add_argument("--min-usefulness", type=float, default=0.2, help="Max mean usefulness to flag a chunk (default: 0.2)")
+
     # compare
     p_cmp = sub.add_parser(
         "compare",
@@ -523,6 +533,35 @@ def _analyze_markdown(report) -> str:
     return "\n".join(lines)
 
 
+def _run_optimize(args):
+    from .optimize import recommend_across_traces, compute_pareto
+    from .pareto_render import render_pareto_ascii
+    from .store import TraceStore
+
+    db_path = Path(args.db) if args.db else _default_db_path()
+    if not db_path.exists():
+        print("token-lens optimize: no store found at " + str(db_path) + " — run `token-lens ingest` first.")
+        return 0
+    store = TraceStore(str(db_path))
+    aggregates = store.aggregate_ablations()
+    if not aggregates:
+        print("token-lens optimize: store has no ablation data yet — analyze traces with RAG chunks first.")
+        store.close()
+        return 0
+    recs = recommend_across_traces(store, min_coverage=args.min_coverage, min_usefulness=args.min_usefulness)
+    curve = compute_pareto(store, max_points=args.max_points)
+    print("token-lens optimize  (" + str(db_path) + ")")
+    print("")
+    print("  " + str(len(aggregates)) + " unique chunks across " + str(max((a.get("trace_count") or 0) for a in aggregates)) + " traces")
+    print("  " + str(len(recs)) + " recommendation(s):")
+    for r in recs[:10]:
+        print("    - remove " + ",".join(r.targets) + "  saves " + str(r.token_reduction) + " tok (~$" + ("%.4f" % r.cost_reduction_usd) + "/req)  coverage=" + ("%.1f%%" % (r.trace_coverage * 100)) + "  conf=" + r.confidence)
+    print("")
+    print(render_pareto_ascii(curve))
+    store.close()
+    return 0
+
+
 # ---------------------------------------------------------------------------
 # compare
 # ---------------------------------------------------------------------------
@@ -781,7 +820,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     if argv is None:
         argv = sys.argv[1:]
 
-    if argv and argv[0] in {"analyze", "serve", "compare", "demo", "init", "check", "ablation", "ingest", "stats", "-h", "--help"}:
+    if argv and argv[0] in {"analyze", "serve", "compare", "demo", "init", "check", "ablation", "ingest", "stats", "optimize", "-h", "--help"}:
         parser = _build_parser()
         args = parser.parse_args(argv)
         if args.cmd == "analyze":
@@ -802,6 +841,8 @@ def main(argv: Sequence[str] | None = None) -> int:
             return _run_ingest(args)
         elif args.cmd == "stats":
             return _run_stats(args)
+        elif args.cmd == "optimize":
+            return _run_optimize(args)
         parser.print_help()
         return 1
 
