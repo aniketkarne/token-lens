@@ -238,6 +238,10 @@ th {
 .danger { color: var(--danger); }
 .ok { color: var(--ok); }
 .approx-badge { background: #fff3cd; color: #856404; padding: 2px 6px; border-radius: 3px; font-size: 0.85em; margin-left: 6px; }
+.verdict-useful { color: #155724; background: #d4edda; padding: 1px 6px; border-radius: 3px; }
+.verdict-marginal { color: #856404; background: #fff3cd; padding: 1px 6px; border-radius: 3px; }
+.verdict-irrelevant { color: #721c24; background: #f8d7da; padding: 1px 6px; border-radius: 3px; }
+.muted { color: #888; }
 .chunk-row.flagged {
   background: rgba(239, 68, 68, 0.08);
 }
@@ -340,10 +344,42 @@ def _messages_table(report: AnalysisReport) -> str:
     )
 
 
+def _ablation_table(report: AnalysisReport) -> str:
+    abl = getattr(report, "ablation", None)
+    if abl is None:
+        return ""
+    rows: list[str] = []
+    for c in abl.chunks:
+        cid = html.escape(str(c.chunk_id)) if c.chunk_id else "<span class=\"muted\">(no id)</span>"
+        rows.append(
+            f"<tr><td>{cid}</td><td>{c.tokens}</td>"
+            f"<td>{c.query_similarity:.2f}</td><td>{c.redundancy:.2f}</td>"
+            f"<td>{c.usefulness:.2f}</td>"
+            f"<td><span class=\"verdict verdict-{html.escape(c.verdict)}\">{html.escape(c.verdict)}</span></td></tr>"
+        )
+    summary = (
+        f"potential_removal_tokens={abl.potential_removal_tokens}, "
+        f"estimated_quality_delta={abl.estimated_quality_delta:+.3f}"
+    )
+    return (
+        "<section class=\"ablation\">\n"
+        "<h2>RAG context</h2>\n"
+        f"<p class=\"muted\">{summary}</p>\n"
+        "<table>\n"
+        "<thead><tr><th>chunk_id</th><th>tokens</th><th>query_sim</th><th>redundancy</th><th>usefulness</th><th>verdict</th></tr></thead>\n"
+        "<tbody>\n"
+        + "".join(rows)
+        + "</tbody>\n"
+        "</table>\n"
+        "</section>"
+    )
+
+
 def render_html(report: AnalysisReport) -> str:
     """Return the full self-contained HTML report as a string."""
 
     zones_t = _zone_table(report)
+    ablation_t = _ablation_table(report)
     chunks_t = _chunk_table(report)
     messages_t = _messages_table(report)
     treemap = _treemap_svg(report)
@@ -388,6 +424,7 @@ def render_html(report: AnalysisReport) -> str:
     <h2>Zone Breakdown</h2>
     {zones_t}
   </section>
+  {ablation_t}
   <section>
     <h2>Chunk Utilization</h2>
     {chunks_t}

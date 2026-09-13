@@ -574,7 +574,7 @@ Legend: `[ ]` pending · `[~]` in progress · `[x]` done · `[!]` blocked
 - [x] Task 4.5 — Estimated quality delta
 - [x] Task 4.6 — Parse RAG chunks from traces
 - [x] Task 4.7 — `analyze` returns ablation result
-- [ ] Task 4.8 — Report renders ablation table
+- [x] Task 4.8 — Report renders ablation table
 - [ ] Task 4.9 — CLI `ablation` subcommand
 - [ ] Task 4.10 — Phase 4 verification
 
