@@ -29,7 +29,7 @@ Legend: `[ ]` pending · `[~]` in progress · `[x]` done · `[!]` blocked
 - [x] Task 3.2 — Breach checker
 - [x] Task 3.3 — `token-lens check` CLI (exit codes)
 - [x] Task 3.4 — Web `/api/budget/check`
-- [ ] Task 3.5 — Phase 3 verification
+- [x] Task 3.5 — Phase 3 verification
 
 ### Phase 4 — RAG Chunk Ablation (Heuristic)
 - [ ] Task 4.1 — `ChunkUsefulness` + `AblationResult` types
