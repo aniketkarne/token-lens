@@ -28,7 +28,7 @@ Legend: `[ ]` pending · `[~]` in progress · `[x]` done · `[!]` blocked
 - [x] Task 3.1 — `BudgetConfig` + YAML loader
 - [x] Task 3.2 — Breach checker
 - [x] Task 3.3 — `token-lens check` CLI (exit codes)
-- [ ] Task 3.4 — Web `/api/budget/check`
+- [x] Task 3.4 — Web `/api/budget/check`
 - [ ] Task 3.5 — Phase 3 verification
 
 ### Phase 4 — RAG Chunk Ablation (Heuristic)

@@ -42,6 +42,7 @@ from pathlib import Path
 from typing import Any
 
 from .analyze import analyze_trace
+from .budget import BudgetConfig, check_budget
 from .report import render_html, render_svg
 
 __all__ = ["build_server", "create_handler", "main"]
@@ -598,6 +599,9 @@ class _Handler(BaseHTTPRequestHandler):
         if path == "/api/upload":
             return self._handle_upload()
 
+        if path == "/api/budget/check":
+            return self._handle_budget_check()
+
         self._send_json(404, {"error": "not found", "path": path})
 
     # -- upload ----------------------------------------------------------
@@ -664,6 +668,114 @@ class _Handler(BaseHTTPRequestHandler):
             {
                 "report_id": item.report_id,
                 "report": report.to_dict(),
+            },
+        )
+
+    # -- budget check -----------------------------------------------------
+    def _handle_budget_check(self) -> None:
+        """``POST /api/budget/check``.
+
+        Accepts a JSON body shaped like::
+
+            {"config": {"budgets": {...}}, "trace": {"messages": [...]}}
+
+        and returns ``{ok, breaches, config, trace_summary}``.
+        """
+        length = int(self.headers.get("content-length", "0") or 0)
+        if length <= 0:
+            self._send_json(400, {"error": "empty body"})
+            return
+        if length > 32 * 1024 * 1024:
+            self._send_json(413, {"error": "payload too large (>32MB)"})
+            return
+
+        raw = self.rfile.read(length)
+        try:
+            payload = json.loads(raw.decode("utf-8"))
+        except (json.JSONDecodeError, ValueError) as exc:
+            self._send_json(400, {"error": f"invalid JSON: {exc}"})
+            return
+
+        if not isinstance(payload, dict):
+            self._send_json(400, {"error": "body must be a JSON object"})
+            return
+
+        config_raw = payload.get("config") or {}
+        trace = payload.get("trace")
+        if not isinstance(trace, dict) or "messages" not in trace:
+            self._send_json(400, {"error": "missing or invalid 'trace' (must be a dict with 'messages')"})
+            return
+
+        # Extract the budget section from the (possibly larger) token-lens
+        # config dict. ``budgets`` may be absent — that's fine, all fields
+        # stay optional.
+        if isinstance(config_raw, dict):
+            budgets_raw = config_raw.get("budgets") or {}
+        else:
+            budgets_raw = {}
+        if not isinstance(budgets_raw, dict):
+            self._send_json(400, {"error": "'budgets' must be an object"})
+            return
+
+        total = budgets_raw.get("total_tokens")
+        cost = budgets_raw.get("cost_usd")
+        zones_raw = budgets_raw.get("zones") or {}
+        if isinstance(zones_raw, dict):
+            zones = {
+                str(k): int(v)
+                for k, v in zones_raw.items()
+                if v is not None
+            }
+        else:
+            zones = {}
+        try:
+            cfg = BudgetConfig(
+                total_tokens=int(total) if total is not None else None,
+                zones=zones,
+                cost_usd=float(cost) if cost is not None else None,
+            )
+        except (TypeError, ValueError) as exc:
+            self._send_json(400, {"error": f"invalid budget config: {exc}"})
+            return
+
+        try:
+            report = analyze_trace(trace, config={"model": trace.get("model", "gpt-4o")})
+        except Exception as exc:  # pragma: no cover - defensive
+            self._send_json(400, {"error": f"failed to analyze trace: {exc}"})
+            return
+
+        breaches = check_budget(cfg, report)
+        breach_dicts = [
+            {
+                "code": b.code,
+                "actual": b.actual,
+                "limit": b.limit,
+                "severity": b.severity,
+            }
+            for b in breaches
+        ]
+        self._send_json(
+            200,
+            {
+                "ok": len(breaches) == 0,
+                "breaches": breach_dicts,
+                "config": config_raw,
+                "trace_summary": {
+                    "model": report.model,
+                    "total_tokens": report.total_tokens,
+                    "estimated_cost_usd": report.estimated_cost_usd,
+                    "zones": [
+                        {
+                            "zone": z.zone.value,
+                            "token_count": z.token_count,
+                            "pct_of_total": z.pct_of_total,
+                        }
+                        for z in report.zones
+                    ],
+                    "tokenizer_backend": report.tokenizer_backend.value,
+                    "tokenizer_name": report.tokenizer_name,
+                    "is_approximate": report.is_approximate,
+                },
             },
         )
 
