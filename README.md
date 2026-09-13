@@ -605,7 +605,7 @@ Legend: `[ ]` pending · `[~]` in progress · `[x]` done · `[!]` blocked
 - [x] Task 8.4 — Pareto frontier computation
 - [x] Task 8.5 — CLI `optimize` subcommand
 - [x] Task 8.6 — Pareto SVG renderer
-- [ ] Task 8.7 — Phase 8 verification
+- [x] Task 8.7 — Phase 8 verification
 
 ### Phase 9 — Web App: Budget / Live / Optimize Pages
 - [ ] Task 9.1 — `/budget` page
