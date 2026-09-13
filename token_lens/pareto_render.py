@@ -15,16 +15,34 @@ def render_pareto_ascii(curve, width=50, height=12):
     min_q = min((p.quality for p in curve.points), default=0.0)
     out = ["QUALITY vs TOKENS  (Pareto frontier)", ""]
     rows = []
-    for row in range(height):
-        q_at_row = max_q - (row / max(height - 1, 1)) * (max_q - min_q)
-        line = " " * 6
-        for p in curve.points:
-            if abs(p.quality - q_at_row) < (max_q - min_q) / max(height - 1, 1) / 1.5:
-                line += "*"
-            else:
-                line += " "
-            line += " "
-        rows.append(line)
+    n_points = len(curve.points)
+    # Compute column for each point
+    if n_points > 1:
+        x_cols = [int(round(6 + i * (width - 6) / (n_points - 1))) for i in range(n_points)]
+    else:
+        x_cols = [6 + (width - 6) // 2]
+    # Build a 2D grid and draw a line through the points
+    grid = [[" "] * width for _ in range(height)]
+    for pi, p in enumerate(curve.points):
+        col = x_cols[pi]
+        q_norm = (p.quality - min_q) / (max_q - min_q) if max_q > min_q else 0.5
+        row = int(round((1 - q_norm) * (height - 1)))
+        row = max(0, min(height - 1, row))
+        if 0 <= col < width:
+            grid[row][col] = "*"
+    # Connect points with a simple line (DDA-style)
+    for pi in range(n_points - 1):
+        c1, c2 = x_cols[pi], x_cols[pi + 1]
+        p1 = int(round((1 - ((curve.points[pi].quality - min_q) / (max_q - min_q) if max_q > min_q else 0.5)) * (height - 1)))
+        p2 = int(round((1 - ((curve.points[pi + 1].quality - min_q) / (max_q - min_q) if max_q > min_q else 0.5)) * (height - 1)))
+        steps = max(abs(c2 - c1), abs(p2 - p1), 1)
+        for s in range(steps + 1):
+            t = s / steps
+            x = int(round(c1 + (c2 - c1) * t))
+            y = int(round(p1 + (p2 - p1) * t))
+            if 0 <= y < height and 0 <= x < width and grid[y][x] == " ":
+                grid[y][x] = "."
+    rows = ["".join(r).rstrip() for r in grid]
     out.extend(rows)
     out.append("")
     out.append("  tokens: " + str(min_tok) + " " + " " * (width - 16) + str(max_tok))
