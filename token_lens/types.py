@@ -80,6 +80,39 @@ class ChunkInfo:
 
 
 @dataclass
+class ChunkUsefulness:
+    """Per-chunk scoring for RAG ablation.
+
+    Computed for each chunk in a trace's RAG zone. ``usefulness`` is the
+    heuristic composite score (query relevance minus cross-chunk redundancy);
+    ``verdict`` is the categorical label derived from it.
+    """
+
+    index: int
+    chunk_id: str | None = None
+    tokens: int = 0
+    query_similarity: float = 0.0
+    redundancy: float = 0.0
+    usefulness: float = 0.0
+    verdict: str = "irrelevant"
+
+
+@dataclass
+class AblationResult:
+    """Aggregate ablation result for a single trace's RAG zone.
+
+    ``potential_removal_tokens`` sums the token counts of chunks flagged
+    marginal or irrelevant. ``estimated_quality_delta`` is a heuristic
+    estimate of the answer-quality impact if all such chunks were removed
+    (negative = expected degradation, 0 = no expected change).
+    """
+
+    chunks: list[ChunkUsefulness] = field(default_factory=list)
+    potential_removal_tokens: int = 0
+    estimated_quality_delta: float = 0.0
+
+
+@dataclass
 class BoilerplateStats:
     """Aggregate boilerplate/positional risk stats."""
 

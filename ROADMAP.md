@@ -32,7 +32,7 @@ Legend: `[ ]` pending · `[~]` in progress · `[x]` done · `[!]` blocked
 - [x] Task 3.5 — Phase 3 verification
 
 ### Phase 4 — RAG Chunk Ablation (Heuristic)
-- [ ] Task 4.1 — `ChunkUsefulness` + `AblationResult` types
+- [x] Task 4.1 — `ChunkUsefulness` + `AblationResult` types
 - [ ] Task 4.2 — Embedding backend (lazy + cache + hash fallback)
 - [ ] Task 4.3 — Chunk usefulness scorer
 - [ ] Task 4.4 — Cross-chunk redundancy detection
