@@ -89,6 +89,16 @@ def _build_parser() -> argparse.ArgumentParser:
         help="Disable ANSI color in output",
     )
 
+    # init
+    p_init = sub.add_parser(
+        "init",
+        help="Scaffold token-lens.yaml, sample trace, and CI workflow into the current directory",
+    )
+    p_init.add_argument(
+        "--force", action="store_true",
+        help="Overwrite existing files (refuses by default)",
+    )
+
     # compare
     p_cmp = sub.add_parser(
         "compare",
@@ -271,6 +281,24 @@ def _analyze_print_savings(report, use_color: bool = True, quiet: bool = False) 
             print(f"  ... and {len(recs) - 5} more")
     else:
         print(_c(use_color, _GREEN) + "  no mechanical savings found — your prompt is already tight!" + _c(use_color, _RESET))
+
+
+def _run_init(args: argparse.Namespace) -> int:
+    from .scaffold import scaffold, FileExists
+    target = Path.cwd()
+    try:
+        written = scaffold(target, force=getattr(args, "force", False))
+    except FileExists as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 2
+    print(f"token-lens: scaffolded {len(written)} file(s) into {target}")
+    for p in written:
+        try:
+            rel = p.relative_to(target)
+        except ValueError:
+            rel = p
+        print(f"  wrote: {rel}")
+    return 0
 
 
 def _run_analyze(args: argparse.Namespace) -> int:
@@ -545,7 +573,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     if argv is None:
         argv = sys.argv[1:]
 
-    if argv and argv[0] in {"analyze", "serve", "compare", "demo", "-h", "--help"}:
+    if argv and argv[0] in {"analyze", "serve", "compare", "demo", "init", "-h", "--help"}:
         parser = _build_parser()
         args = parser.parse_args(argv)
         if args.cmd == "analyze":
@@ -556,6 +584,8 @@ def main(argv: Sequence[str] | None = None) -> int:
             return _run_demo(args)
         if args.cmd == "serve":
             return _run_serve(args)
+        if args.cmd == "init":
+            return _run_init(args)
         parser.print_help()
         return 1
 
