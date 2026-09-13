@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 import webbrowser
 from pathlib import Path
@@ -35,6 +36,14 @@ _EXAMPLES_DIR = _HERE.parent / "examples"
 
 def _examples_path(*parts: str) -> Path:
     return _EXAMPLES_DIR.joinpath(*parts)
+
+
+def _default_db_path():
+    """Default TraceStore path: ~/.local/share/token-lens/store.db (override via TOKEN_LENS_DB)."""
+    override = os.environ.get("TOKEN_LENS_DB")
+    if override:
+        return Path(override)
+    return Path.home() / ".local" / "share" / "token-lens" / "store.db"
 
 
 def _build_parser() -> argparse.ArgumentParser:
@@ -115,6 +124,25 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     p_abl.add_argument("trace", help="Path to a trace JSON file")
     p_abl.add_argument("--no-color", action="store_true", help="Disable ANSI color in output")
+
+    # ingest
+    p_ing = sub.add_parser(
+        "ingest",
+        help="Ingest a JSONL log file into the local trace store",
+    )
+    p_ing.add_argument("--jsonl", required=True, help="Path to JSONL log file")
+    p_ing.add_argument("--source", default="generic", choices=["generic", "openai", "anthropic"], help="Provider shape")
+    p_ing.add_argument("--follow", action="store_true", help="Follow the file (poll for new lines)")
+    p_ing.add_argument("--once", action="store_true", help="Run a single pass then exit (default)")
+    p_ing.add_argument("--db", default=None, help="Path to the SQLite store")
+
+    # stats
+    p_st = sub.add_parser(
+        "stats",
+        help="Show aggregate stats across ingested traces",
+    )
+    p_st.add_argument("--last", type=int, default=100, help="Lookback window in traces (default: 100)")
+    p_st.add_argument("--db", default=None, help="Path to the SQLite store")
 
     # compare
     p_cmp = sub.add_parser(
@@ -344,6 +372,58 @@ def _run_ablation(args: argparse.Namespace) -> int:
         print("  " + cid.ljust(14) + " " + str(c.tokens).rjust(8) + "  " + ("%.2f" % c.usefulness).rjust(6) + "  " + c.verdict)
     print()
     print("  potential_removal_tokens=" + str(abl.potential_removal_tokens) + "  estimated_quality_delta=" + ("%+.3f" % abl.estimated_quality_delta))
+    return 0
+
+
+def _run_ingest(args):
+    from .store import TraceStore
+    from .ingest.jsonl import tail_jsonl
+
+    log = Path(args.jsonl)
+    db_path = Path(args.db) if args.db else _default_db_path()
+    store = TraceStore(str(db_path))
+    if not log.exists():
+        print("warning: log file not found, nothing to ingest: " + str(log), file=sys.stderr)
+        store.close()
+        return 0
+    n = tail_jsonl(str(log), store, source=args.source, follow=args.follow)
+    print("ingested " + str(n) + " trace(s) from " + str(log) + " into " + str(db_path))
+    store.close()
+    return 0
+
+
+def _run_stats(args):
+    import statistics as _stats
+    from .store import TraceStore
+
+    db_path = Path(args.db) if args.db else _default_db_path()
+    if not db_path.exists():
+        print("token-lens stats: no store found at " + str(db_path) + " — run `token-lens ingest` first.")
+        return 0
+    store = TraceStore(str(db_path))
+    rows = store.recent_traces(limit=args.last)
+    if not rows:
+        print("token-lens stats: store is empty — no traces ingested yet.")
+        store.close()
+        return 0
+    tokens = [r["total_tokens"] for r in rows]
+    costs = [r["cost_usd"] for r in rows]
+    avg_tokens = sum(tokens) / len(tokens)
+    p95 = _stats.quantiles(tokens, n=20)[18] if len(tokens) >= 20 else max(tokens)
+    total_cost = sum(costs)
+    print("token-lens stats  (last " + str(len(rows)) + " traces)")
+    print("  avg total tokens:  " + str(int(avg_tokens)))
+    print("  p95 total tokens:  " + str(int(p95)))
+    print("  max total tokens:  " + str(max(tokens)))
+    print("  total cost (USD):  $" + ("%.6f" % total_cost))
+    print()
+    print("  zone breakdown:")
+    by_zone = store.zone_breakdown(lookback_traces=args.last)
+    total_zone = sum(by_zone.values()) or 1
+    for zone in sorted(by_zone.keys(), key=lambda z: -by_zone[z]):
+        pct = 100.0 * by_zone[zone] / total_zone
+        print("    " + zone.ljust(14) + " " + str(by_zone[zone]).rjust(8) + " tokens  (" + ("%.1f" % pct) + "%)")
+    store.close()
     return 0
 
 
@@ -701,7 +781,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     if argv is None:
         argv = sys.argv[1:]
 
-    if argv and argv[0] in {"analyze", "serve", "compare", "demo", "init", "check", "ablation", "-h", "--help"}:
+    if argv and argv[0] in {"analyze", "serve", "compare", "demo", "init", "check", "ablation", "ingest", "stats", "-h", "--help"}:
         parser = _build_parser()
         args = parser.parse_args(argv)
         if args.cmd == "analyze":
@@ -718,6 +798,10 @@ def main(argv: Sequence[str] | None = None) -> int:
             return _run_check(args)
         elif args.cmd == "ablation":
             return _run_ablation(args)
+        elif args.cmd == "ingest":
+            return _run_ingest(args)
+        elif args.cmd == "stats":
+            return _run_stats(args)
         parser.print_help()
         return 1
 

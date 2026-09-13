@@ -47,8 +47,8 @@ Legend: `[ ]` pending · `[~]` in progress · `[x]` done · `[!]` blocked
 - [x] Task 5.1 — SQLite schema + `TraceStore`
 - [x] Task 5.2 — Provider normalizer (OpenAI/Anthropic/Generic)
 - [x] Task 5.3 — JSONL tail with offset checkpointing
-- [ ] Task 5.4 — `token-lens ingest` CLI
-- [ ] Task 5.5 — `token-lens stats` aggregates
+- [x] Task 5.4 — `token-lens ingest` CLI
+- [x] Task 5.5 — `token-lens stats` aggregates
 - [ ] Task 5.6 — Web `/api/stats` + `/api/ingest`
 - [ ] Task 5.7 — Phase 5 verification
 
