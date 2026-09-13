@@ -237,6 +237,7 @@ th {
 .warn { color: var(--warn); }
 .danger { color: var(--danger); }
 .ok { color: var(--ok); }
+.approx-badge { background: #fff3cd; color: #856404; padding: 2px 6px; border-radius: 3px; font-size: 0.85em; margin-left: 6px; }
 .chunk-row.flagged {
   background: rgba(239, 68, 68, 0.08);
 }
@@ -370,6 +371,9 @@ def render_html(report: AnalysisReport) -> str:
     model: <code>{html.escape(report.model or 'unknown')}</code> ·
     encoder: <code>{html.escape(report.encoder_label)}</code> ·
     tokenizer_source: <code>{html.escape(report.tokenizer_source)}</code> ·
+    tokenizer_name: <code>{html.escape(report.tokenizer_name)}</code> ·
+    tokenizer_backend: <code>{report.tokenizer_backend.value}</code>
+    {'<span class="approx-badge">⚠ approximate</span>' if report.is_approximate else ''} ·
     messages: {report.message_count} ·
     generated: token-lens v0.2.0
   </div>
