@@ -25,7 +25,7 @@ Legend: `[ ]` pending · `[~]` in progress · `[x]` done · `[!]` blocked
 - [x] Task 2.3 — Phase 2 verification
 
 ### Phase 3 — Token Budget CI
-- [ ] Task 3.1 — `BudgetConfig` + YAML loader
+- [x] Task 3.1 — `BudgetConfig` + YAML loader
 - [ ] Task 3.2 — Breach checker
 - [ ] Task 3.3 — `token-lens check` CLI (exit codes)
 - [ ] Task 3.4 — Web `/api/budget/check`

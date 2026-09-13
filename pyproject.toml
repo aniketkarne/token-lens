@@ -21,6 +21,7 @@ classifiers = [
     "Intended Audience :: Developers",
 ]
 dependencies = [
+    "PyYAML>=5.4",
     "typing-extensions>=4.0.0; python_version < '3.10'",
 ]
 
