@@ -246,6 +246,10 @@ def _walk(obj: Any, path: str, out: list[MessageRecord]) -> None:
             for i, m in enumerate(obj):
                 role = str(m.get("role", "user"))
                 content = _to_text(m.get("content") or m.get("parts"))
+                meta = {}
+                m_meta = m.get("metadata")
+                if isinstance(m_meta, dict):
+                    meta.update(m_meta)
                 out.append(
                     MessageRecord(
                         index=len(out),
@@ -253,6 +257,7 @@ def _walk(obj: Any, path: str, out: list[MessageRecord]) -> None:
                         content=content,
                         zone=_zone_for_role(role),
                         source=f"{path or 'list'}[{i}]",
+                        metadata=meta,
                     )
                 )
             return
