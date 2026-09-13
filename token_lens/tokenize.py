@@ -12,6 +12,7 @@ without provider dependencies.
 
 from __future__ import annotations
 
+import pathlib
 import re
 from dataclasses import dataclass
 from typing import Callable, Iterable
@@ -27,6 +28,14 @@ _TIKTOKEN_MODEL_ALIASES = {
     "claude": "cl100k_base",
     "claude-3": "cl100k_base",
 }
+
+
+def _hf_hub_available() -> bool:
+    try:
+        import huggingface_hub  # type: ignore  # noqa: F401
+        return True
+    except Exception:
+        return False
 
 
 def _try_tiktoken(model: str) -> tuple[Callable[[str], list[str]], str] | None:
@@ -66,6 +75,25 @@ def _try_transformers(model: str) -> tuple[Callable[[str], list[str]], str] | No
     return encode, f"transformers:{model}"
 
 
+def _try_hf_tokenizers(model: str) -> tuple[Callable[[str], list[str]], str] | None:
+    """Load via the lightweight HuggingFace `tokenizers` package (NOT `transformers`)."""
+    try:
+        from tokenizers import Tokenizer  # type: ignore
+    except Exception:
+        return None
+    if not _hf_hub_available():
+        return None
+    try:
+        tok = Tokenizer.from_pretrained(model)
+    except Exception:
+        return None
+
+    def encode(s: str) -> list[str]:
+        return tok.encode(s).tokens
+
+    return encode, f"tokenizers:{model}"
+
+
 # ----- deterministic heuristic fallback ---------------------------------------
 
 
@@ -96,6 +124,35 @@ def _heuristic_tokens(text: str) -> list[str]:
     return tokens
 
 
+def _try_custom_tokenizer(path: str | None) -> tuple[Callable[[str], list[str]], str] | None:
+    """Load a local HF-format tokenizer.json file. Returns None on any failure."""
+    if not path:
+        return None
+    p = pathlib.Path(path)
+    if not p.exists():
+        return None
+    try:
+        from tokenizers import Tokenizer  # type: ignore
+    except Exception:
+        return None
+    try:
+        tok = Tokenizer.from_file(str(p))
+    except Exception:
+        return None
+
+    def encode(s: str) -> list[str]:
+        toks = tok.encode(s).tokens
+        # Defensive: some tokenizer.json files (e.g. minimal BPE without unk_token)
+        # decode to an empty list even for known input. Fall back to whitespace split
+        # so the encoder still returns something useful instead of silently dropping.
+        if not toks and s.strip():
+            return s.split()
+        return toks
+
+    label = f"tokenizers:custom:{p.name}"
+    return encode, label
+
+
 # ----- facade -----------------------------------------------------------------
 
 
@@ -115,14 +172,30 @@ class TokenEncoder:
         return self.count(text)
 
 
-def resolve_encoder(model: str | None) -> TokenEncoder:
-    """Pick the best available encoder for ``model``.
+def resolve_encoder(model: str | None, custom_path: str | None = None) -> TokenEncoder:
+    """Pick the best available encoder for ``model`` (or ``custom_path``).
 
-    Falls back deterministically if no provider tokenizer is available.
+    Resolution order:
+      1. custom_path (if provided and loadable)
+      2. tiktoken (if installed and model name matches)
+      3. transformers AutoTokenizer (if installed and model id matches)
+      4. tokenizers.from_pretrained (if installed and Hub is reachable)
+      5. deterministic heuristic fallback
     """
 
+    if custom_path:
+        res = _try_custom_tokenizer(custom_path)
+        if res is not None:
+            enc_fn, label = res
+            return TokenEncoder(
+                name=label,
+                source="tokenizers",
+                encode=enc_fn,
+                count=lambda s, _f=enc_fn: len(_f(s)),
+            )
+
     if model:
-        for factory in (_try_tiktoken, _try_transformers):
+        for factory in (_try_tiktoken, _try_transformers, _try_hf_tokenizers):
             res = factory(model)
             if res is not None:
                 enc_fn, label = res
@@ -142,4 +215,4 @@ def resolve_encoder(model: str | None) -> TokenEncoder:
     )
 
 
-__all__ = ["resolve_encoder", "TokenEncoder", "_heuristic_tokens"]
+__all__ = ["resolve_encoder", "TokenEncoder", "_heuristic_tokens", "_try_hf_tokenizers", "_try_custom_tokenizer", "_hf_hub_available"]
