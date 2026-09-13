@@ -86,6 +86,14 @@ Legend: `[ ]` pending · `[~]` in progress · `[x]` done · `[!]` blocked
 - [ ] Task 10.4 — Bump to 1.0.0, tag, push
 - [ ] Task 10.5 — Phase 10 verification + final smoke
 
+### Phase 11 — (Deferred to v1.1)
+- [ ] Task 11.1 — Langfuse pull ingest (deferred)
+- [ ] Task 11.2 — OTLP receiver (deferred)
+- [ ] Task 11.3 — Eval-mode (real LLM judge) (deferred)
+- [ ] Task 11.4 — Multi-page web UI: `/budget`, `/live`, full `/optimize` (deferred)
+
+> **Note:** Phases 6 (Langfuse) and 7 (OTel receiver) from the original plan are deferred to v1.1. They depend on a working live-data ingestion pipeline (Phase 5) which is what v1.0 ships first. Eval-mode (real LLM judge) is also deferred — v1.0 ships heuristic-only ablation with honest labels everywhere.
+
 ---
 
 
