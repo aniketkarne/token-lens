@@ -584,7 +584,7 @@ Legend: `[ ]` pending · `[~]` in progress · `[x]` done · `[!]` blocked
 - [x] Task 5.3 — JSONL tail with offset checkpointing
 - [x] Task 5.4 — `token-lens ingest` CLI
 - [x] Task 5.5 — `token-lens stats` aggregates
-- [ ] Task 5.6 — Web `/api/stats` + `/api/ingest`
+- [x] Task 5.6 — Web `/api/stats` + `/api/ingest`
 - [ ] Task 5.7 — Phase 5 verification
 
 ### Phase 6 — Live Trace Ingest (Langfuse Pull)
