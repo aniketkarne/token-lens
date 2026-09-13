@@ -153,6 +153,7 @@ def _build_parser() -> argparse.ArgumentParser:
     p_opt.add_argument("--max-points", type=int, default=10, help="Max points on the Pareto curve (default: 10)")
     p_opt.add_argument("--min-coverage", type=float, default=0.9, help="Min trace coverage to recommend a chunk (default: 0.9)")
     p_opt.add_argument("--min-usefulness", type=float, default=0.2, help="Max mean usefulness to flag a chunk (default: 0.2)")
+    p_opt.add_argument("--svg", default=None, help="Also write the Pareto SVG to this path")
 
     # compare
     p_cmp = sub.add_parser(
@@ -203,6 +204,10 @@ def _build_parser() -> argparse.ArgumentParser:
     p_dmo.add_argument(
         "--no-color", action="store_true",
         help="Disable ANSI color in output",
+    )
+    p_dmo.add_argument(
+        "--svg", default=None,
+        help="Also write the Pareto SVG (from the synthetic demo store) to this path",
     )
 
     # serve
@@ -535,7 +540,7 @@ def _analyze_markdown(report) -> str:
 
 def _run_optimize(args):
     from .optimize import recommend_across_traces, compute_pareto
-    from .pareto_render import render_pareto_ascii
+    from .pareto_render import render_pareto_ascii, render_pareto_svg
     from .store import TraceStore
 
     db_path = Path(args.db) if args.db else _default_db_path()
@@ -558,6 +563,9 @@ def _run_optimize(args):
         print("    - remove " + ",".join(r.targets) + "  saves " + str(r.token_reduction) + " tok (~$" + ("%.4f" % r.cost_reduction_usd) + "/req)  coverage=" + ("%.1f%%" % (r.trace_coverage * 100)) + "  conf=" + r.confidence)
     print("")
     print(render_pareto_ascii(curve))
+    if getattr(args, "svg", None):
+        render_pareto_svg(curve, args.svg)
+        print("wrote: " + str(args.svg))
     store.close()
     return 0
 
@@ -717,9 +725,64 @@ def _run_check(args: argparse.Namespace) -> int:
 # ---------------------------------------------------------------------------
 
 
+def _build_demo_store():
+    """Build an in-memory TraceStore seeded with synthetic RAG traces.
+
+    30 traces. 12 chunks per trace: 4 highly useful, 8 progressively less
+    useful. Aggregates are designed to surface at least one chunk with high
+    coverage and low mean usefulness so the Pareto curve has a visible knee.
+    """
+    import tempfile
+
+    from .store import TraceStore
+
+    fd, path = tempfile.mkstemp(prefix="tl_demo_", suffix=".db")
+    os.close(fd)
+    store = TraceStore(path)
+
+    # (chunk_id, usefulness, tokens_per_trace). Per-trace total tokens scales
+    # across all chunks so a Pareto curve has multiple knee points.
+    chunks = [
+        # highly useful (kept).
+        ("system_prompt", 0.92, 80),
+        ("product_docs", 0.85, 140),
+        ("user_history", 0.78, 110),
+        ("tools_schema", 0.72, 60),
+        # borderline.
+        ("few_shot_examples", 0.45, 90),
+        ("tone_guidance", 0.55, 40),
+        # redundant / low-value.
+        ("marketing_filler", 0.05, 180),
+        ("legal_disclaimer", 0.04, 150),
+        ("duplicate_footer", 0.03, 120),
+        ("stale_release_notes", 0.06, 95),
+        # off-topic (worst).
+        ("offtopic_blog_excerpt", 0.02, 200),
+        ("random_documentation", 0.01, 160),
+    ]
+
+    n_traces = 30
+    for i in range(n_traces):
+        trace_id = store.insert_trace({
+            "timestamp": "2026-09-13T00:00:%02dZ" % i,
+            "model": "gpt-4o",
+            "total_tokens": sum(t for _, _, t in chunks),
+            "cost_usd": 0.005,
+            "messages": [],
+            "zones": [],
+        })
+        for chunk_id, usefulness, tokens in chunks:
+            verdict = "useful" if usefulness >= 0.2 else "irrelevant"
+            store.insert_ablation(trace_id=trace_id, chunk_id=chunk_id, usefulness=usefulness, verdict=verdict, tokens=tokens)
+
+    return store, path
+
+
 def _run_demo(args: argparse.Namespace) -> int:
     from .analyze import analyze_file
     from .compare import compare_reports, render_compare_markdown
+    from .optimize import compute_pareto, recommend_across_traces
+    from .pareto_render import render_pareto_ascii, render_pareto_svg
     from .report import write_html
 
     before_path = Path(args.before) if args.before else _examples_path("bloated_trace.json")
@@ -790,6 +853,52 @@ def _run_demo(args: argparse.Namespace) -> int:
     print(f"    before html: {before_html}")
     print(f"    after  html: {after_html}")
     print(f"    compare md:  {md_path}")
+
+    # Phase 10 — Pareto + cross-trace recommendations from a synthetic store.
+    store, store_path = _build_demo_store()
+    try:
+        curve = compute_pareto(store, max_points=8)
+        recs = recommend_across_traces(store, min_coverage=0.9, min_usefulness=0.2)
+    finally:
+        try:
+            store.close()
+            os.unlink(store_path)
+        except OSError:  # pragma: no cover
+            pass
+
+    print()
+    print(_c(use_color, _BOLD) + "QUALITY vs TOKENS — Pareto frontier" + _c(use_color, _RESET))
+    print()
+    print(render_pareto_ascii(curve))
+    if recs:
+        print()
+        print(_c(use_color, _BOLD) + "Top cross-trace recommendations" + _c(use_color, _RESET))
+        for i, r in enumerate(recs[:5], start=1):
+            print(
+                f"  {i}. remove " + ",".join(r.targets)
+                + f"  saves {r.token_reduction:,} tok"
+                + f" (${r.cost_reduction_usd:.4f}/req)"
+                + f"  coverage={r.trace_coverage*100:.1f}%"
+                + f"  conf={r.confidence}"
+            )
+    else:
+        print()
+        print(_c(use_color, _GREEN) + "  no mechanical savings found — your prompt is already tight!" + _c(use_color, _RESET))
+
+    if getattr(args, "svg", None):
+        from .store import TraceStore as _TS
+        store2, store_path2 = _build_demo_store()
+        try:
+            curve2 = compute_pareto(store2, max_points=8)
+            render_pareto_svg(curve2, args.svg)
+        finally:
+            try:
+                store2.close()
+                os.unlink(store_path2)
+            except OSError:  # pragma: no cover
+                pass
+        print()
+        print(f"  svg: {args.svg}")
 
     if args.open_after:
         url = after_html.resolve().as_uri()
