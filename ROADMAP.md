@@ -36,7 +36,7 @@ Legend: `[ ]` pending · `[~]` in progress · `[x]` done · `[!]` blocked
 - [x] Task 4.2 — Embedding backend (lazy + cache + hash fallback)
 - [x] Task 4.3 — Chunk usefulness scorer
 - [x] Task 4.4 — Cross-chunk redundancy detection
-- [ ] Task 4.5 — Estimated quality delta
+- [x] Task 4.5 — Estimated quality delta
 - [ ] Task 4.6 — Parse RAG chunks from traces
 - [ ] Task 4.7 — `analyze` returns ablation result
 - [ ] Task 4.8 — Report renders ablation table

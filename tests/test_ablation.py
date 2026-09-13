@@ -104,3 +104,37 @@ def test_single_chunk_has_zero_redundancy():
     chunks = [_m("The only chunk here.", 6)]
     r = score_chunk_usefulness(chunks, query="anything")
     assert r.chunks[0].redundancy == 0.0
+
+
+def test_quality_delta_small_for_all_irrelevant_chunks():
+    from token_lens.ablation import score_chunk_usefulness
+    from token_lens.types import MessageRecord, ZoneKind
+
+    def _m(content, tokens):
+        return MessageRecord(index=0, role="system", content=content, zone=ZoneKind.RAG,
+                            source="rag", token_count=tokens, metadata={})
+
+    chunks = [
+        _m("Bananas are yellow.", 5),
+        _m("Pizza toppings are tasty.", 5),
+        _m("Cats love cardboard boxes.", 5),
+    ]
+    r = score_chunk_usefulness(chunks, query="What is quantum foam in physics?")
+    assert abs(r.estimated_quality_delta) < 0.15
+
+
+def test_quality_delta_zero_when_no_chunks_flagged():
+    from token_lens.ablation import score_chunk_usefulness
+    from token_lens.types import MessageRecord, ZoneKind
+
+    def _m(content, tokens):
+        return MessageRecord(index=0, role="system", content=content, zone=ZoneKind.RAG,
+                            source="rag", token_count=tokens, metadata={})
+
+    chunks = [
+        _m("Quantum foam is a concept in quantum gravity describing spacetime foam at the Planck scale.", 18),
+    ]
+    r = score_chunk_usefulness(chunks, query="What is quantum foam in physics?")
+    assert r.chunks[0].verdict in ("useful", "marginal")
+    if r.chunks[0].verdict == "useful":
+        assert r.estimated_quality_delta == 0.0
