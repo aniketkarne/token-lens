@@ -44,7 +44,7 @@ Legend: `[ ]` pending · `[~]` in progress · `[x]` done · `[!]` blocked
 - [x] Task 4.10 — Phase 4 verification
 
 ### Phase 5 — Live Trace Ingest (JSONL Tail)
-- [ ] Task 5.1 — SQLite schema + `TraceStore`
+- [x] Task 5.1 — SQLite schema + `TraceStore`
 - [ ] Task 5.2 — Provider normalizer (OpenAI/Anthropic/Generic)
 - [ ] Task 5.3 — JSONL tail with offset checkpointing
 - [ ] Task 5.4 — `token-lens ingest` CLI
