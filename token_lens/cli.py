@@ -99,6 +99,15 @@ def _build_parser() -> argparse.ArgumentParser:
         help="Overwrite existing files (refuses by default)",
     )
 
+    # check
+    p_chk = sub.add_parser(
+        "check",
+        help="Compare trace files against a YAML budget; exit non-zero on breach",
+    )
+    p_chk.add_argument("--config", default="token-lens.yaml", help="Path to budget YAML (default: token-lens.yaml)")
+    p_chk.add_argument("--json", default=None, help="Write a JSON breach report to this path")
+    p_chk.add_argument("trace", nargs="+", help="One or more trace files (JSON or JSONL); globs are expanded")
+
     # compare
     p_cmp = sub.add_parser(
         "compare",
@@ -466,6 +475,88 @@ def _run_compare(args: argparse.Namespace) -> int:
 
 
 # ---------------------------------------------------------------------------
+# check
+# ---------------------------------------------------------------------------
+
+
+def _run_check(args: argparse.Namespace) -> int:
+    import glob as _glob
+    from .budget import load_budget, check_budget
+    from .analyze import analyze_trace
+
+    try:
+        cfg = load_budget(args.config)
+    except FileNotFoundError as exc:
+        print(f"error: config not found: {exc}", file=sys.stderr)
+        return 2
+
+    paths = []
+    for raw in args.trace:
+        expanded = _glob.glob(raw)
+        if expanded:
+            paths.extend(Path(p) for p in expanded)
+        else:
+            paths.append(Path(raw))
+
+    all_files = []
+    any_breach = False
+
+    for p in paths:
+        if not p.exists():
+            print(f"error: trace file not found: {p}", file=sys.stderr)
+            any_breach = True
+            continue
+
+        is_jsonl = p.suffix.lower() in (".jsonl", ".ndjson")
+        records = []
+        if is_jsonl:
+            for lineno, raw in enumerate(p.read_text(encoding="utf-8").splitlines(), start=1):
+                raw = raw.strip()
+                if not raw:
+                    continue
+                try:
+                    records.append((f"{p}:{lineno}", json.loads(raw)))
+                except json.JSONDecodeError as exc:
+                    print(f"error: invalid JSON at {p}:{lineno}: {exc}", file=sys.stderr)
+                    any_breach = True
+        else:
+            try:
+                records.append((str(p), json.loads(p.read_text(encoding="utf-8"))))
+            except json.JSONDecodeError as exc:
+                print(f"error: invalid JSON in {p}: {exc}", file=sys.stderr)
+                any_breach = True
+
+        file_breaches = []
+        for label, trace in records:
+            try:
+                report = analyze_trace(trace, config={"model": trace.get("model", "gpt-4o")})
+            except Exception as exc:
+                print(f"error: failed to analyze {label}: {exc}", file=sys.stderr)
+                any_breach = True
+                continue
+            breaches = check_budget(cfg, report)
+            file_breaches.append({"record": label, "breaches": [
+                {"code": b.code, "actual": b.actual, "limit": b.limit, "severity": b.severity}
+                for b in breaches
+            ]})
+            if breaches:
+                any_breach = True
+                for b in breaches:
+                    print(f"  ✗ {label}: {b.code}  actual={b.actual:.0f}  limit={b.limit:.0f}")
+            else:
+                print(f"  ✓ {label}: under budget ({report.total_tokens} tokens)")
+
+        if records:
+            all_files.append({"path": str(p), "breaches": file_breaches})
+
+    if args.json:
+        Path(args.json).write_text(json.dumps({"config": args.config, "files": all_files}, indent=2), encoding="utf-8")
+        print(f"  wrote: {args.json}")
+
+    return 1 if any_breach else 0
+
+
+# ---------------------------------------------------------------------------
 # demo
 # ---------------------------------------------------------------------------
 
@@ -573,7 +664,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     if argv is None:
         argv = sys.argv[1:]
 
-    if argv and argv[0] in {"analyze", "serve", "compare", "demo", "init", "-h", "--help"}:
+    if argv and argv[0] in {"analyze", "serve", "compare", "demo", "init", "check", "-h", "--help"}:
         parser = _build_parser()
         args = parser.parse_args(argv)
         if args.cmd == "analyze":
@@ -586,6 +677,8 @@ def main(argv: Sequence[str] | None = None) -> int:
             return _run_serve(args)
         if args.cmd == "init":
             return _run_init(args)
+        elif args.cmd == "check":
+            return _run_check(args)
         parser.print_help()
         return 1
 
