@@ -20,6 +20,22 @@ class ZoneKind(str, Enum):
     UNKNOWN = "unknown"
 
 
+class TokenizerBackend(str, Enum):
+    """Which tokenizer engine produced token counts in an AnalysisReport.
+
+    The legacy ``tokenizer_source`` field on AnalysisReport is a free-form string
+    carried for backward compatibility. ``tokenizer_backend`` is the typed enum
+    introduced for v1.0; ``is_approximate=True`` means the counts were produced
+    by a deterministic fallback (chars/4, BPE-lite) rather than a real provider
+    tokenizer, and the report should be labeled accordingly.
+    """
+
+    TIKTOKEN = "tiktoken"
+    HUGGINGFACE = "huggingface"
+    CUSTOM = "custom"
+    HEURISTIC = "heuristic"
+
+
 @dataclass
 class MessageRecord:
     """A single prompt message after parsing."""
@@ -93,6 +109,11 @@ class AnalysisReport:
     config: Mapping[str, Any]
     warnings: list[str] = field(default_factory=list)
     recommendations: list[Any] = field(default_factory=list)  # list[Recommendation], lazy-imported
+    # v1.0 typed tokenizer metadata. ``tokenizer_source`` (legacy str) remains
+    # above for backward compat; new code should prefer these three fields.
+    tokenizer_backend: TokenizerBackend = TokenizerBackend.HEURISTIC
+    tokenizer_name: str = "heuristic-v1"
+    is_approximate: bool = True
 
     def zone(self, kind: ZoneKind) -> ZoneBreakdown | None:
         for z in self.zones:
