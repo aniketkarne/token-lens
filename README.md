@@ -569,7 +569,7 @@ Legend: `[ ]` pending · `[~]` in progress · `[x]` done · `[!]` blocked
 ### Phase 4 — RAG Chunk Ablation (Heuristic)
 - [x] Task 4.1 — `ChunkUsefulness` + `AblationResult` types
 - [x] Task 4.2 — Embedding backend (lazy + cache + hash fallback)
-- [ ] Task 4.3 — Chunk usefulness scorer
+- [x] Task 4.3 — Chunk usefulness scorer
 - [ ] Task 4.4 — Cross-chunk redundancy detection
 - [ ] Task 4.5 — Estimated quality delta
 - [ ] Task 4.6 — Parse RAG chunks from traces
