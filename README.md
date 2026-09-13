@@ -555,7 +555,7 @@ Legend: `[ ]` pending · `[~]` in progress · `[x]` done · `[!]` blocked
 - [x] Task 1.5 — Phase 1 verification
 
 ### Phase 2 — `token-lens init` Scaffolding
-- [ ] Task 2.1 — Template files (`token-lens.yaml`, CI snippet, sample trace)
+- [x] Task 2.1 — Template files (`token-lens.yaml`, CI snippet, sample trace)
 - [ ] Task 2.2 — `scaffold.py` + `init` subcommand
 - [ ] Task 2.3 — Phase 2 verification
 

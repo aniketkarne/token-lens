@@ -1,0 +1,25 @@
+# GitHub Actions workflow for token-lens
+name: token-lens check
+
+on:
+  pull_request:
+    paths:
+      - 'logs/**'
+      - 'token-lens.yaml'
+  push:
+    branches: [main]
+
+jobs:
+  token-lens:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install token-lens
+        run: pip install 'token-lens>=1.0.0'
+      - name: Run budget check
+        run: |
+          token-lens check --config token-lens.yaml logs/*.jsonl
+        continue-on-error: true

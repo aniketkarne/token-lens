@@ -1,0 +1,10 @@
+{
+  "model": "gpt-4o",
+  "messages": [
+    {"role": "system", "content": "You are a helpful assistant. Be concise. Answer in one sentence when possible."},
+    {"role": "system", "content": "Background: the Eiffel Tower was completed in 1889.", "metadata": {"zone": "rag", "chunk_id": "rag-1"}},
+    {"role": "system", "content": "Background: Paris is the capital of France.", "metadata": {"zone": "rag", "chunk_id": "rag-2"}},
+    {"role": "system", "content": "Background: Pizza toppings are a matter of personal taste.", "metadata": {"zone": "rag", "chunk_id": "rag-3"}},
+    {"role": "user", "content": "When was the Eiffel Tower completed and where is it?"}
+  ]
+}
