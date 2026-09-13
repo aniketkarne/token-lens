@@ -576,7 +576,7 @@ Legend: `[ ]` pending · `[~]` in progress · `[x]` done · `[!]` blocked
 - [x] Task 4.7 — `analyze` returns ablation result
 - [x] Task 4.8 — Report renders ablation table
 - [x] Task 4.9 — CLI `ablation` subcommand
-- [ ] Task 4.10 — Phase 4 verification
+- [x] Task 4.10 — Phase 4 verification
 
 ### Phase 5 — Live Trace Ingest (JSONL Tail)
 - [ ] Task 5.1 — SQLite schema + `TraceStore`
