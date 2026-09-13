@@ -130,6 +130,10 @@ def _walk(obj: Any, path: str, out: list[MessageRecord]) -> None:
         if "role" in obj and ("content" in obj or "parts" in obj):
             role = str(obj.get("role", "user"))
             content = _to_text(obj.get("content") or obj.get("parts"))
+            meta: dict[str, Any] = {}
+            obj_meta = obj.get("metadata")
+            if isinstance(obj_meta, dict):
+                meta.update(obj_meta)
             out.append(
                 MessageRecord(
                     index=len(out),
@@ -137,6 +141,7 @@ def _walk(obj: Any, path: str, out: list[MessageRecord]) -> None:
                     content=content,
                     zone=_zone_for_role(role),
                     source=path or "root",
+                    metadata=meta,
                 )
             )
             return
@@ -152,14 +157,18 @@ def _walk(obj: Any, path: str, out: list[MessageRecord]) -> None:
                     role = str(m.get("role", "user"))
                     content = _to_text(m.get("content") or m.get("parts"))
                     zone = zone_hint or _zone_for_role(role)
+                    meta: dict[str, Any] = {"origin_key": key}
+                    m_meta = m.get("metadata")
+                    if isinstance(m_meta, dict):
+                        meta.update(m_meta)
                     out.append(
                         MessageRecord(
                             index=len(out),
                             role=role,
                             content=content,
                             zone=zone,
-                            source=f"{child_path}[{i}]",
-                            metadata={"origin_key": key},
+                            source=child_path + "[" + str(i) + "]",
+                            metadata=meta,
                         )
                     )
                 continue
