@@ -28,12 +28,15 @@ Example::
 from __future__ import annotations
 
 import argparse
+import html as html_module
 import json
 import mimetypes
+import os
 import re
 import secrets
 import shutil
 import sys
+import tempfile
 import threading
 import urllib.parse
 from dataclasses import dataclass
@@ -522,6 +525,74 @@ class _Handler(BaseHTTPRequestHandler):
         if path == "/":
             html = _index_html().encode("utf-8")
             self._send(200, html, "text/html; charset=utf-8")
+            return
+
+        if path == "/optimize":
+            from .optimize import recommend_across_traces, compute_pareto
+            from .pareto_render import render_pareto_svg
+            from .store import TraceStore
+
+            q = dict(urllib.parse.parse_qsl(url.query or ""))
+            db_path = q.get("db") or os.path.join(
+                os.path.expanduser("~"), ".local", "share", "token-lens", "store.db"
+            )
+            svg_html = ""
+            rec_rows = ""
+            note = ""
+            if not os.path.exists(db_path):
+                note = (
+                    '<p class="muted">No store found at '
+                    + db_path
+                    + ' — run <code>token-lens ingest --jsonl logs/req.jsonl</code> first.</p>'
+                )
+            else:
+                store = TraceStore(db_path)
+                aggregates = store.aggregate_ablations()
+                if not aggregates:
+                    note = '<p class="muted">Store is empty — analyze traces with RAG chunks first.</p>'
+                else:
+                    recs = recommend_across_traces(store)
+                    curve = compute_pareto(store)
+                    tmp = tempfile.NamedTemporaryFile(suffix=".svg", delete=False)
+                    tmp.close()
+                    render_pareto_svg(curve, tmp.name)
+                    with open(tmp.name) as fh:
+                        svg_html = fh.read()
+                    os.unlink(tmp.name)
+                    for r in recs[:10]:
+                        rec_rows += (
+                            "<tr><td>" + html_module.escape(",".join(r.targets)) + "</td>"
+                            "<td>" + str(r.token_reduction) + "</td>"
+                            "<td>$" + ("%.4f" % r.cost_reduction_usd) + "</td>"
+                            "<td>" + ("%.0f%%" % (r.trace_coverage * 100)) + "</td>"
+                            "<td>" + r.confidence + "</td></tr>"
+                        )
+                store.close()
+            page = (
+                '<!doctype html><html><head><meta charset="utf-8">'
+                '<title>token-lens optimize</title>'
+                '<style>body{font-family:sans-serif;max-width:920px;margin:2em auto;color:#222}'
+                "h1{font-size:1.4em}"
+                "table{border-collapse:collapse;margin:1em 0}td,th{padding:6px 12px;border-bottom:1px solid #eee}"
+                ".muted{color:#888}"
+                ".banner{background:#fff3cd;color:#856404;padding:8px 12px;border-radius:3px;margin:1em 0}"
+                "</style></head><body>"
+                "<h1>token-lens optimize &mdash; Pareto frontier</h1>"
+                '<div class="banner">⚠ Heuristic ablation, not measured eval. '
+                "Quality values are token-weighted estimates; real eval-mode ships in v1.1.</div>"
+                + note
+                + (
+                    "<h2>Recommendations</h2><table>"
+                    "<thead><tr><th>chunks</th><th>tokens saved</th>"
+                    "<th>cost saved / req</th><th>coverage</th><th>confidence</th></tr></thead>"
+                    "<tbody>" + rec_rows + "</tbody></table>"
+                    if rec_rows else ""
+                )
+                + svg_html
+                + '<p><a href="/">← back</a></p>'
+                "</body></html>"
+            )
+            self._send(200, page.encode("utf-8"), "text/html; charset=utf-8")
             return
 
         if path == "/healthz":
