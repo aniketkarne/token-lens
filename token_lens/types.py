@@ -113,6 +113,35 @@ class AblationResult:
 
 
 @dataclass
+class ParetoPoint:
+    """One point on the quality-vs-tokens Pareto frontier."""
+
+    tokens: int
+    quality: float
+    label: str | None = None
+
+
+@dataclass
+class ParetoCurve:
+    """The Pareto frontier: quality on y-axis, tokens on x-axis."""
+
+    points: list = field(default_factory=list)
+
+
+@dataclass
+class CrossTraceRecommendation:
+    """Cross-trace recommendation: remove these chunks (by id) to save these tokens."""
+
+    action: str
+    targets: list = field(default_factory=list)
+    token_reduction: int = 0
+    cost_reduction_usd: float = 0.0
+    trace_coverage: float = 0.0
+    quality_delta: float = 0.0
+    confidence: str = "low"
+
+
+@dataclass
 class BoilerplateStats:
     """Aggregate boilerplate/positional risk stats."""
 

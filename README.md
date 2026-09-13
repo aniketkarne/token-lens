@@ -599,9 +599,9 @@ Legend: `[ ]` pending · `[~]` in progress · `[x]` done · `[!]` blocked
 - [ ] Task 7.4 — Phase 7 verification
 
 ### Phase 8 — Evidence-Based Recommendations + Pareto Frontier
-- [ ] Task 8.1 — `CrossTraceRecommendation` + `ParetoPoint` types
-- [ ] Task 8.2 — Ablation persistence in store
-- [ ] Task 8.3 — Cross-trace recommendation engine
+- [x] Task 8.1 — `CrossTraceRecommendation` + `ParetoPoint` types
+- [x] Task 8.2 — Ablation persistence in store
+- [x] Task 8.3 — Cross-trace recommendation engine
 - [ ] Task 8.4 — Pareto frontier computation
 - [ ] Task 8.5 — CLI `optimize` subcommand
 - [ ] Task 8.6 — Pareto SVG renderer

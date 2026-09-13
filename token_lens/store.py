@@ -17,6 +17,14 @@ CREATE TABLE IF NOT EXISTS traces (
     zones_json TEXT NOT NULL
 );
 CREATE INDEX IF NOT EXISTS traces_timestamp ON traces(timestamp);
+CREATE TABLE IF NOT EXISTS ablations (
+    trace_id INTEGER NOT NULL,
+    chunk_id TEXT NOT NULL,
+    usefulness REAL NOT NULL,
+    verdict TEXT NOT NULL,
+    tokens INTEGER NOT NULL DEFAULT 0
+);
+CREATE INDEX IF NOT EXISTS ablations_chunk ON ablations(chunk_id);
 """
 
 
@@ -69,6 +77,26 @@ class TraceStore:
                 tokens = int(z.get("tokens", 0))
                 out[zone_name] = out.get(zone_name, 0) + tokens
         return out
+
+    def insert_ablation(self, trace_id, chunk_id, usefulness, verdict, tokens=0):
+        self._conn.execute(
+            "INSERT INTO ablations (trace_id, chunk_id, usefulness, verdict, tokens) VALUES (?, ?, ?, ?, ?)",
+            (int(trace_id), str(chunk_id), float(usefulness), str(verdict), int(tokens)),
+        )
+        self._conn.commit()
+
+    def recent_ablations(self, limit=10000):
+        cur = self._conn.execute(
+            "SELECT trace_id, chunk_id, usefulness, verdict, tokens FROM ablations ORDER BY trace_id DESC LIMIT ?",
+            (int(limit),),
+        )
+        return [dict(row) for row in cur.fetchall()]
+
+    def aggregate_ablations(self):
+        cur = self._conn.execute(
+            "SELECT chunk_id, COUNT(DISTINCT trace_id) AS trace_count, AVG(usefulness) AS mean_usefulness, SUM(tokens) AS total_tokens FROM ablations GROUP BY chunk_id"
+        )
+        return [dict(row) for row in cur.fetchall()]
 
     def close(self):
         self._conn.close()
