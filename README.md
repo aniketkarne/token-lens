@@ -1,5 +1,8 @@
 # token-lens
 
+[![tests](https://github.com/aniketkarne/token-lens/actions/workflows/tests.yml/badge.svg)](https://github.com/aniketkarne/token-lens/actions/workflows/tests.yml)
+[![license](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
 > **Find the minimum context needed to preserve answer quality.**
 > Heuristic ablation, cross-trace Pareto frontier, and a CLI budget CI
 > for LLM prompts — offline, stdlib-only, no cloud.
@@ -41,19 +44,20 @@ That chart is the **whole product in one picture**. The curve says: *"here's how
 ## Quickstart
 
 ```bash
-pip install token-lens
+# not on PyPI yet — install from git
+pip install "git+https://github.com/aniketkarne/token-lens.git"
 token-lens init                 # scaffold token-lens.yaml + GitHub Actions workflow
 token-lens demo                 # see the Pareto chart with synthetic data
 token-lens analyze your_trace.json     # analyze a real trace
 token-lens ingest --jsonl logs/req.jsonl     # tail a real log
 token-lens optimize --db ~/.local/share/token-lens/store.db     # Pareto from real traces
 token-lens check --config token-lens.yaml logs/*.jsonl   # CI budget check
-token-lens serve               # local web UI at http://127.0.0.1:8793
+token-lens serve               # local web UI at http://127.0.0.1:8765
 ```
 
 ## What it does
 
-- **Real tokenizers** — tiktoken (cl100k_base, o200k_base), HuggingFace `tokenizers` (your local `.json` files), and a deterministic heuristic fallback. Every report carries the tokenizer name and an honest `⚠ approximate` badge when the heuristic is in play.
+- **Real tokenizers** — tiktoken (cl100k_base, o200k_base), HuggingFace `tokenizers` (your local `.json` files), and a deterministic heuristic fallback. Install the backends you want with `pip install "token-lens[tiktoken]"` / `pip install "token-lens[tokenizers]"`. Every report carries the tokenizer name and an honest `⚠ approximate` badge when the heuristic is in play.
 - **Per-chunk RAG ablation** — for every chunk in your trace: query similarity, cross-chunk redundancy, usefulness verdict (`useful` / `marginal` / `irrelevant`), and an estimated quality delta if you removed it.
 - **Cross-trace Pareto frontier** — across many traces, aggregate by chunk_id and compute a quality-vs-tokens frontier. Confidence-rated recommendations: *remove these N chunks, save X tokens, costs $Y/request, covered in Z% of traces*.
 - **Token budget CI** — `token-lens check --config token-lens.yaml` exits non-zero on breach. Drop the GitHub Actions workflow into `.github/workflows/` and your PR fails when a trace exceeds the budget.
@@ -63,7 +67,8 @@ token-lens serve               # local web UI at http://127.0.0.1:8793
 ## Honest limitations (v1.0)
 
 - **Heuristic ablation, not real eval.** Quality values are token-weighted cosine-similarity estimates between chunks and the query. Real LLM-judge eval-mode (per-chunk WITH/WITHOUT answer-quality deltas) ships in v1.1. Every output is labeled with this caveat.
-- **Hash embedder by default.** When `sentence-transformers` isn't installed, the chunk usefulness scorer uses a 64-dim char-trigram feature-hashing embedder — fine for sanity checks, dumb for semantic relevance. Install with `pip install token-lens[embeddings]` for real sentence-transformer scoring.
+- **Hash embedder by default.** When `sentence-transformers` isn't installed, the chunk usefulness scorer uses a 64-dim char-trigram feature-hashing embedder — fine for sanity checks, dumb for semantic relevance. Install with `pip install "token-lens[embeddings]"` for real sentence-transformer scoring.
+- **Small pricing table.** Cost estimates cover a handful of current models (verified against provider price sheets; see `token_lens/pricing.py`). Anything else reports as unpriced — pass `--price-per-1k` to price it yourself.
 - **Single-machine, local-only.** token-lens does not phone home. There is no hosted version. Your traces stay on disk.
 
 ## CLI reference
@@ -79,7 +84,7 @@ token-lens serve               # local web UI at http://127.0.0.1:8793
 | `token-lens stats --last N` | aggregate stats from the store |
 | `token-lens optimize --db PATH` | Pareto frontier + recommendations from the store |
 | `token-lens compare BEFORE.json AFTER.json` | diff two traces, show savings |
-| `token-lens serve` | local web UI at `http://127.0.0.1:8793` |
+| `token-lens serve` | local web UI at `http://127.0.0.1:8765` |
 
 ## Python API
 

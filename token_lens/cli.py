@@ -28,14 +28,14 @@ from .recommend import total_estimated_savings
 from .report import write_html, write_svg
 
 
-# Where the bundled demo fixtures live. Resolved relative to this file so it
-# works no matter where the package is installed.
+# Where the bundled demo fixtures live. They ship inside the package (data/)
+# so they are present in every install — wheel or editable.
 _HERE = Path(__file__).resolve().parent
-_EXAMPLES_DIR = _HERE.parent / "examples"
+_DEMO_DATA_DIR = _HERE / "data"
 
 
-def _examples_path(*parts: str) -> Path:
-    return _EXAMPLES_DIR.joinpath(*parts)
+def _demo_path(*parts: str) -> Path:
+    return _DEMO_DATA_DIR.joinpath(*parts)
 
 
 def _default_db_path():
@@ -183,11 +183,11 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     p_dmo.add_argument(
         "--before", default=None,
-        help="Override path to the BEFORE trace (default: examples/bloated_trace.json)",
+        help="Override path to the BEFORE trace (default: bundled bloated_trace.json)",
     )
     p_dmo.add_argument(
         "--after", default=None,
-        help="Override path to the AFTER trace (default: examples/lean_trace.json)",
+        help="Override path to the AFTER trace (default: bundled lean_trace.json)",
     )
     p_dmo.add_argument(
         "--open", dest="open_after", action="store_true",
@@ -422,7 +422,7 @@ def _run_stats(args):
         store.close()
         return 0
     tokens = [r["total_tokens"] for r in rows]
-    costs = [r["cost_usd"] for r in rows]
+    costs = [r["cost_usd"] for r in rows if r["cost_usd"] is not None]
     avg_tokens = sum(tokens) / len(tokens)
     p95 = _stats.quantiles(tokens, n=20)[18] if len(tokens) >= 20 else max(tokens)
     total_cost = sum(costs)
@@ -430,7 +430,18 @@ def _run_stats(args):
     print("  avg total tokens:  " + str(int(avg_tokens)))
     print("  p95 total tokens:  " + str(int(p95)))
     print("  max total tokens:  " + str(max(tokens)))
-    print("  total cost (USD):  $" + ("%.6f" % total_cost))
+    if len(costs) == len(rows):
+        print("  total cost (USD):  $" + ("%.6f" % total_cost))
+    else:
+        print(
+            "  total cost (USD):  $"
+            + ("%.6f" % total_cost)
+            + "  (priced "
+            + str(len(costs))
+            + " of "
+            + str(len(rows))
+            + " traces; unpriced models are not guessed)"
+        )
     print()
     print("  zone breakdown:")
     by_zone = store.zone_breakdown(lookback_traces=args.last)
@@ -785,8 +796,8 @@ def _run_demo(args: argparse.Namespace) -> int:
     from .pareto_render import render_pareto_ascii, render_pareto_svg
     from .report import write_html
 
-    before_path = Path(args.before) if args.before else _examples_path("bloated_trace.json")
-    after_path = Path(args.after) if args.after else _examples_path("lean_trace.json")
+    before_path = Path(args.before) if args.before else _demo_path("bloated_trace.json")
+    after_path = Path(args.after) if args.after else _demo_path("lean_trace.json")
     out_dir = Path(args.out_dir) if args.out_dir else Path.cwd()
     out_dir.mkdir(parents=True, exist_ok=True)
     use_color = not getattr(args, "no_color", False)

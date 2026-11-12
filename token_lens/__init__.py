@@ -10,6 +10,7 @@ Public API:
     build_recommendations(r)    -> list[Recommendation]
     compare_reports(b, a)       -> CompareResult
     render_compare_markdown(c)  -> str
+    score_chunk_usefulness(...) -> AblationResult
 """
 
 from typing import Any
@@ -21,6 +22,7 @@ from .types import (
     ZoneBreakdown,
     ZoneKind,
 )
+from .ablation import score_chunk_usefulness
 from .analyze import analyze_file, analyze_trace
 from .report import render_html, render_svg
 
@@ -61,6 +63,7 @@ __all__ = [
     "ZoneKind",
     "analyze_file",
     "analyze_trace",
+    "score_chunk_usefulness",
     "render_html",
     "render_svg",
     "build_server",
@@ -69,4 +72,4 @@ __all__ = [
     "render_compare_markdown",
 ]
 
-__version__ = "0.3.0"
+__version__ = "1.0.0"

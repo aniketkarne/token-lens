@@ -3,4 +3,6 @@ include LICENSE
 include pyproject.toml
 recursive-include assets *.svg
 recursive-include examples *.json *.svg
+recursive-include token_lens/templates *
+recursive-include token_lens/data *.json
 recursive-include tests *.py

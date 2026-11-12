@@ -12,8 +12,14 @@ license = { text = "MIT" }
 authors = [{ name = "Aniket Karne" }]
 keywords = ["llm", "tokens", "prompt", "visualization", "rag", "context-window", "tokenization"]
 classifiers = [
+    "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Operating System :: OS Independent",
     "Topic :: Software Development :: Libraries :: Python Modules",
     "Topic :: Scientific/Engineering :: Information Analysis",
@@ -28,22 +34,24 @@ dependencies = [
 [project.optional-dependencies]
 test = ["pytest>=7.0"]
 tiktoken = ["tiktoken>=0.5"]
+tokenizers = ["tokenizers>=0.15", "huggingface_hub>=0.20"]
 transformers = ["transformers>=4.30"]
+embeddings = ["sentence-transformers>=2.2"]
 
 [project.scripts]
 token-lens = "token_lens.cli:main"
 token-lens-serve = "token_lens.server:main"
 
 [project.urls]
-Homepage = "https://github.com/aniketkarne-com/token-lens"
-Issues = "https://github.com/aniketkarne-com/token-lens/issues"
-Repository = "https://github.com/aniketkarne-com/token-lens"
+Homepage = "https://github.com/aniketkarne/token-lens"
+Issues = "https://github.com/aniketkarne/token-lens/issues"
+Repository = "https://github.com/aniketkarne/token-lens"
 
-[tool.setuptools]
-packages = ["token_lens"]
+[tool.setuptools.packages.find]
+include = ["token_lens*"]
 
 [tool.setuptools.package-data]
-token_lens = ["py.typed"]
+token_lens = ["py.typed", "templates/*", "data/*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

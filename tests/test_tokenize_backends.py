@@ -1,8 +1,16 @@
 """Tests for the HuggingFace tokenizers backend and custom-file loader."""
+import importlib.util
 import json
 import pathlib
 
+import pytest
+
 from token_lens.tokenize import resolve_encoder, TokenEncoder
+
+requires_tokenizers = pytest.mark.skipif(
+    importlib.util.find_spec("tokenizers") is None,
+    reason="optional 'tokenizers' backend not installed (pip install 'token-lens[tokenizers]')",
+)
 
 
 def _write_minimal_tokenizer_json(path: pathlib.Path) -> None:
@@ -30,6 +38,7 @@ def _write_minimal_tokenizer_json(path: pathlib.Path) -> None:
     path.write_text(json.dumps(data))
 
 
+@requires_tokenizers
 def test_custom_tokenizer_loader_succeeds(tmp_path):
     tok_path = tmp_path / "tok.json"
     _write_minimal_tokenizer_json(tok_path)
@@ -65,6 +74,7 @@ def test_resolve_encoder_heuristic_fallback_when_no_provider(tmp_path, monkeypat
     assert "heuristic" in enc.name
 
 
+@requires_tokenizers
 def test_custom_path_takes_priority_over_unknown_model(tmp_path):
     tok_path = tmp_path / "tok.json"
     _write_minimal_tokenizer_json(tok_path)

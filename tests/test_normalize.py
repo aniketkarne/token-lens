@@ -41,11 +41,17 @@ def test_normalize_generates_timestamp_when_missing():
     assert "T" in out["timestamp"]
 
 
-def test_normalize_includes_cost_usd():
-    line = {"model": "gpt-4o", "messages": [], "usage": {"total_tokens": 1000}}
+def test_normalize_prices_known_model():
+    line = {"model": "gpt-6-luna", "messages": [], "usage": {"total_tokens": 1000}}
     out = normalize(line, source="generic")
     assert "cost_usd" in out
     assert out["cost_usd"] > 0
+
+
+def test_normalize_leaves_unknown_model_unpriced():
+    line = {"model": "made-up-model-99", "messages": [], "usage": {"total_tokens": 1000}}
+    out = normalize(line, source="generic")
+    assert out["cost_usd"] is None
 
 
 def test_normalize_handles_rag_metadata():

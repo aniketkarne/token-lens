@@ -42,9 +42,10 @@ def test_chunks_have_scores(sample_trace_path: Path):
 
 
 def test_cost_known_model(sample_trace_path: Path):
-    report = analyze_file(sample_trace_path, config={"model": "gpt-4o"})
+    report = analyze_file(sample_trace_path, config={"model": "gpt-6-luna"})
     assert report.estimated_cost_usd is not None
     assert report.cost_model_label is not None
+    assert "gpt-6-luna" in report.cost_model_label
 
 
 def test_cost_override(sample_trace_path: Path):

@@ -1,0 +1,57 @@
+name: tests
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.9", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install core + test deps
+        run: pip install -e ".[test]"
+      - name: Run tests (no optional tokenizer backends)
+        run: pytest
+      - name: Install optional tokenizer backends
+        run: pip install -e ".[test,tiktoken,tokenizers]"
+      - name: Run tests (all tokenizer backends)
+        run: pytest
+
+  wheel-smoke:
+    # The test job runs from a source checkout, where every resource exists by
+    # accident. This job proves the *installed wheel* carries what the CLI
+    # reads at runtime: the ingest subpackage, the scaffold templates, and the
+    # bundled demo traces.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Build wheel
+        run: |
+          pip install build
+          python -m build --wheel
+      - name: Clean install and smoke-test
+        run: |
+          python -m venv /tmp/smoke
+          /tmp/smoke/bin/pip install dist/*.whl
+          /tmp/smoke/bin/python -c "import token_lens.ingest.jsonl, token_lens.ingest.normalize"
+          /tmp/smoke/bin/python -c "from token_lens import analyze_file, score_chunk_usefulness"
+          mkdir /tmp/sandbox
+          cd /tmp/sandbox
+          /tmp/smoke/bin/token-lens init
+          test -f token-lens.yaml
+          test -f .github/workflows/token-lens.yml
+          test -f examples/sample_trace.json
+          /tmp/smoke/bin/token-lens demo
+          /tmp/smoke/bin/token-lens analyze examples/sample_trace.json --json /tmp/report.json
+          test -s /tmp/report.json

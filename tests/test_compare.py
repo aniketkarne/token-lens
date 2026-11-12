@@ -15,8 +15,8 @@ from token_lens.compare import (
 
 
 def test_compare_two_reports(repo_root: Path):
-    a = analyze_file(repo_root / "examples" / "bloated_trace.json", config={"model": "gpt-4o"})
-    b = analyze_file(repo_root / "examples" / "lean_trace.json", config={"model": "gpt-4o"})
+    a = analyze_file(repo_root / "token_lens" / "data" / "bloated_trace.json", config={"model": "gpt-4o"})
+    b = analyze_file(repo_root / "token_lens" / "data" / "lean_trace.json", config={"model": "gpt-4o"})
     cmp = compare_reports(a, b)
     assert isinstance(cmp, CompareResult)
     assert cmp.before_total_tokens == a.total_tokens
@@ -27,8 +27,8 @@ def test_compare_two_reports(repo_root: Path):
 
 
 def test_compare_zones_have_deltas(repo_root: Path):
-    a = analyze_file(repo_root / "examples" / "bloated_trace.json", config={"model": "gpt-4o"})
-    b = analyze_file(repo_root / "examples" / "lean_trace.json", config={"model": "gpt-4o"})
+    a = analyze_file(repo_root / "token_lens" / "data" / "bloated_trace.json", config={"model": "gpt-4o"})
+    b = analyze_file(repo_root / "token_lens" / "data" / "lean_trace.json", config={"model": "gpt-4o"})
     cmp = compare_reports(a, b)
     # The bloated trace has history, the lean one does not.
     zones_by_name = {z.zone: z for z in cmp.zones}
@@ -40,8 +40,8 @@ def test_compare_zones_have_deltas(repo_root: Path):
 
 
 def test_compare_summary_is_human_readable(repo_root: Path):
-    a = analyze_file(repo_root / "examples" / "bloated_trace.json", config={"model": "gpt-4o"})
-    b = analyze_file(repo_root / "examples" / "lean_trace.json", config={"model": "gpt-4o"})
+    a = analyze_file(repo_root / "token_lens" / "data" / "bloated_trace.json", config={"model": "gpt-4o"})
+    b = analyze_file(repo_root / "token_lens" / "data" / "lean_trace.json", config={"model": "gpt-4o"})
     cmp = compare_reports(a, b)
     s = cmp.summary()
     assert "tokens:" in s
@@ -51,15 +51,15 @@ def test_compare_summary_is_human_readable(repo_root: Path):
 
 
 def test_compare_to_dict_is_json_serializable(repo_root: Path):
-    a = analyze_file(repo_root / "examples" / "bloated_trace.json", config={"model": "gpt-4o"})
-    b = analyze_file(repo_root / "examples" / "lean_trace.json", config={"model": "gpt-4o"})
+    a = analyze_file(repo_root / "token_lens" / "data" / "bloated_trace.json", config={"model": "gpt-4o"})
+    b = analyze_file(repo_root / "token_lens" / "data" / "lean_trace.json", config={"model": "gpt-4o"})
     cmp = compare_reports(a, b)
     json.dumps(cmp.to_dict())  # must not raise
 
 
 def test_render_compare_markdown_contains_savings_table(repo_root: Path):
-    a = analyze_file(repo_root / "examples" / "bloated_trace.json", config={"model": "gpt-4o"})
-    b = analyze_file(repo_root / "examples" / "lean_trace.json", config={"model": "gpt-4o"})
+    a = analyze_file(repo_root / "token_lens" / "data" / "bloated_trace.json", config={"model": "gpt-4o"})
+    b = analyze_file(repo_root / "token_lens" / "data" / "lean_trace.json", config={"model": "gpt-4o"})
     cmp = compare_reports(a, b)
     md = render_compare_markdown(cmp)
     assert "# token-lens compare" in md
@@ -69,8 +69,8 @@ def test_render_compare_markdown_contains_savings_table(repo_root: Path):
 
 
 def test_compare_same_trace_is_zero_delta(repo_root: Path):
-    a = analyze_file(repo_root / "examples" / "lean_trace.json", config={"model": "gpt-4o"})
-    b = analyze_file(repo_root / "examples" / "lean_trace.json", config={"model": "gpt-4o"})
+    a = analyze_file(repo_root / "token_lens" / "data" / "lean_trace.json", config={"model": "gpt-4o"})
+    b = analyze_file(repo_root / "token_lens" / "data" / "lean_trace.json", config={"model": "gpt-4o"})
     cmp = compare_reports(a, b)
     assert cmp.delta_tokens == 0
     assert cmp.delta_pct == 0.0
@@ -78,8 +78,8 @@ def test_compare_same_trace_is_zero_delta(repo_root: Path):
 
 def test_compare_encoder_mismatch_warning(repo_root: Path, tmp_path: Path):
     """Compare banners a warning when before/after use different encoders."""
-    a = analyze_file(repo_root / "examples" / "bloated_trace.json", config={"model": "gpt-4o"})
-    b = analyze_file(repo_root / "examples" / "lean_trace.json", config={"model": "gpt-4o"})
+    a = analyze_file(repo_root / "token_lens" / "data" / "bloated_trace.json", config={"model": "gpt-4o"})
+    b = analyze_file(repo_root / "token_lens" / "data" / "lean_trace.json", config={"model": "gpt-4o"})
     # Force a fake encoder label mismatch.
     object.__setattr__(a, "encoder_label", "tiktoken-cl100k")
     object.__setattr__(b, "encoder_label", "heuristic-bpe-lite")
