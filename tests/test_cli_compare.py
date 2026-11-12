@@ -45,8 +45,8 @@ def test_cli_compare_prints_savings_one_liner(repo_root: Path):
     rc, stdout, stderr = _run(
         [
             "compare",
-            str(repo_root / "examples" / "bloated_trace.json"),
-            str(repo_root / "examples" / "lean_trace.json"),
+            str(repo_root / "token_lens" / "data" / "bloated_trace.json"),
+            str(repo_root / "token_lens" / "data" / "lean_trace.json"),
             "--no-color",
         ]
     )
@@ -59,8 +59,8 @@ def test_cli_compare_writes_json_and_md(repo_root: Path, tmp_path: Path):
     rc, stdout, stderr = _run(
         [
             "compare",
-            str(repo_root / "examples" / "bloated_trace.json"),
-            str(repo_root / "examples" / "lean_trace.json"),
+            str(repo_root / "token_lens" / "data" / "bloated_trace.json"),
+            str(repo_root / "token_lens" / "data" / "lean_trace.json"),
             "--no-color",
             "--json", str(tmp_path / "c.json"),
             "--md", str(tmp_path / "c.md"),
@@ -78,7 +78,7 @@ def test_cli_compare_missing_file_returns_error(repo_root: Path, tmp_path: Path)
     rc, stdout, stderr = _run(
         [
             "compare",
-            str(repo_root / "examples" / "bloated_trace.json"),
+            str(repo_root / "token_lens" / "data" / "bloated_trace.json"),
             str(tmp_path / "does-not-exist.json"),
             "--no-color",
         ]

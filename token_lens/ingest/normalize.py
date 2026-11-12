@@ -4,8 +4,7 @@ from __future__ import annotations
 import datetime as _dt
 from typing import Any
 
-
-_DEFAULT_PRICE_PER_1K = 0.005
+from ..pricing import estimate_cost
 
 
 def _coerce_int(v):
@@ -79,13 +78,16 @@ def normalize(line, source="generic"):
     else:
         zones = [{"zone": "messages", "tokens": total_tokens}]
 
-    cost_usd = round((total_tokens / 1000.0) * _DEFAULT_PRICE_PER_1K, 6)
+    # Price from the pricing table when the model is known. Unknown models
+    # stay unpriced (None) — a guessed default rate would corrupt every
+    # downstream cost aggregate.
+    cost_usd, _cost_label = estimate_cost(model, int(total_tokens), None)
 
     return {
         "timestamp": timestamp,
         "model": model,
         "total_tokens": int(total_tokens),
-        "cost_usd": float(cost_usd),
+        "cost_usd": cost_usd,
         "messages": messages,
         "zones": zones,
     }

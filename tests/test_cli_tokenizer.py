@@ -1,13 +1,21 @@
 """Tests for --tokenizer and --custom-tokenizer CLI flags on token-lens analyze."""
 from __future__ import annotations
 
+import importlib.util
 import io
 import json
 import sys
 from pathlib import Path
 
+import pytest
+
 from token_lens import cli as cli_mod
 from token_lens import analyze as analyze_mod
+
+requires_tokenizers = pytest.mark.skipif(
+    importlib.util.find_spec("tokenizers") is None,
+    reason="optional 'tokenizers' backend not installed (pip install 'token-lens[tokenizers]')",
+)
 
 
 def _run(argv: list[str]) -> tuple[int, str, str]:
@@ -32,6 +40,7 @@ def _minimal_trace() -> dict:
     }
 
 
+@requires_tokenizers
 def test_analyze_custom_tokenizer_flag_uses_custom_backend(repo_root: Path, tmp_path: Path):
     import json as _json
     tok_path = tmp_path / "tok.json"
@@ -97,6 +106,7 @@ def test_analyze_report_serializes_backend_as_string(tmp_path: Path):
     assert isinstance(body["tokenizer_backend"], str)
 
 
+@requires_tokenizers
 def test_analyze_file_accepts_custom_tokenizer_key(tmp_path: Path):
     import json as _json
     tok_path = tmp_path / "tok.json"

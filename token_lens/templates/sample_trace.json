@@ -1,5 +1,5 @@
 {
-  "model": "gpt-4o",
+  "model": "gpt-6-luna",
   "messages": [
     {"role": "system", "content": "You are a helpful assistant. Be concise. Answer in one sentence when possible."},
     {"role": "system", "content": "Background: the Eiffel Tower was completed in 1889.", "metadata": {"zone": "rag", "chunk_id": "rag-1"}},

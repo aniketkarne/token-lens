@@ -18,7 +18,7 @@ from token_lens.types import ZoneKind
 
 def test_recommendations_attached_to_report(repo_root: Path):
     """analyze_file must populate .recommendations on the AnalysisReport."""
-    p = repo_root / "examples" / "bloated_trace.json"
+    p = repo_root / "token_lens" / "data" / "bloated_trace.json"
     report = analyze_file(p, config={"model": "gpt-4o"})
     assert hasattr(report, "recommendations")
     assert isinstance(report.recommendations, list)
@@ -26,7 +26,7 @@ def test_recommendations_attached_to_report(repo_root: Path):
 
 
 def test_recommendations_have_required_fields(repo_root: Path):
-    p = repo_root / "examples" / "bloated_trace.json"
+    p = repo_root / "token_lens" / "data" / "bloated_trace.json"
     report = analyze_file(p, config={"model": "gpt-4o"})
     for r in report.recommendations:
         assert isinstance(r, Recommendation)
@@ -40,7 +40,7 @@ def test_recommendations_have_required_fields(repo_root: Path):
 
 
 def test_recommendations_sorted_by_savings_desc(repo_root: Path):
-    p = repo_root / "examples" / "bloated_trace.json"
+    p = repo_root / "token_lens" / "data" / "bloated_trace.json"
     report = analyze_file(p, config={"model": "gpt-4o"})
     recs = report.recommendations
     savings = [r.estimated_savings_tokens for r in recs]
@@ -48,13 +48,13 @@ def test_recommendations_sorted_by_savings_desc(repo_root: Path):
 
 
 def test_to_dict_is_json_serializable(repo_root: Path):
-    p = repo_root / "examples" / "bloated_trace.json"
+    p = repo_root / "token_lens" / "data" / "bloated_trace.json"
     report = analyze_file(p, config={"model": "gpt-4o"})
     json.dumps([r.to_dict() for r in report.recommendations])  # no exception
 
 
 def test_recommendations_appear_in_summary_dict(repo_root: Path):
-    p = repo_root / "examples" / "bloated_trace.json"
+    p = repo_root / "token_lens" / "data" / "bloated_trace.json"
     report = analyze_file(p, config={"model": "gpt-4o"})
     d = report.to_dict()
     assert "recommendations" in d
@@ -109,7 +109,7 @@ def test_total_estimated_savings_handles_no_usd():
 
 
 def test_lean_trace_has_few_or_no_recommendations(repo_root: Path):
-    p = repo_root / "examples" / "lean_trace.json"
+    p = repo_root / "token_lens" / "data" / "lean_trace.json"
     report = analyze_file(p, config={"model": "gpt-4o"})
     # Lean trace is already tight; recommendations may be empty or short.
     for r in report.recommendations:

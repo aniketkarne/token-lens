@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS traces (
     timestamp TEXT NOT NULL,
     model TEXT NOT NULL,
     total_tokens INTEGER NOT NULL,
-    cost_usd REAL NOT NULL,
+    cost_usd REAL,
     messages_json TEXT NOT NULL,
     zones_json TEXT NOT NULL
 );
@@ -35,16 +35,47 @@ class TraceStore:
         self._conn = sqlite3.connect(str(self.path))
         self._conn.row_factory = sqlite3.Row
         self._conn.executescript(_SCHEMA)
+        self._migrate_nullable_cost()
         self._conn.commit()
 
+    def _migrate_nullable_cost(self):
+        """cost_usd is nullable (an unpriced model stores NULL, not a guess).
+
+        Older stores created it NOT NULL; rebuild the table so NULL inserts
+        are accepted.
+        """
+        info = self._conn.execute("PRAGMA table_info(traces)").fetchall()
+        col = next((c for c in info if c["name"] == "cost_usd"), None)
+        if col is None or not col["notnull"]:
+            return
+        self._conn.executescript(
+            """
+            CREATE TABLE traces_new (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                timestamp TEXT NOT NULL,
+                model TEXT NOT NULL,
+                total_tokens INTEGER NOT NULL,
+                cost_usd REAL,
+                messages_json TEXT NOT NULL,
+                zones_json TEXT NOT NULL
+            );
+            INSERT INTO traces_new (id, timestamp, model, total_tokens, cost_usd, messages_json, zones_json)
+                SELECT id, timestamp, model, total_tokens, cost_usd, messages_json, zones_json FROM traces;
+            DROP TABLE traces;
+            ALTER TABLE traces_new RENAME TO traces;
+            CREATE INDEX IF NOT EXISTS traces_timestamp ON traces(timestamp);
+            """
+        )
+
     def insert_trace(self, trace):
+        cost = trace.get("cost_usd")
         cur = self._conn.execute(
             "INSERT INTO traces (timestamp, model, total_tokens, cost_usd, messages_json, zones_json) VALUES (?, ?, ?, ?, ?, ?)",
             (
                 str(trace.get("timestamp", "")),
                 str(trace.get("model", "")),
                 int(trace.get("total_tokens", 0)),
-                float(trace.get("cost_usd", 0.0)),
+                float(cost) if cost is not None else None,
                 json.dumps(trace.get("messages", [])),
                 json.dumps(trace.get("zones", [])),
             ),

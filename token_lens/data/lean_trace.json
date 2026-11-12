@@ -1,5 +1,5 @@
 {
-  "model": "gpt-4o",
+  "model": "gpt-6-luna",
   "system_prompt": "You are a nutritionist answering fruit questions. Cite sources. If unsure, say so.",
   "tools": [
     {

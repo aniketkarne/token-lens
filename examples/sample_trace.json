@@ -1,5 +1,5 @@
 {
-  "model": "gpt-4o",
+  "model": "gpt-6-luna",
   "system_prompt": "You are an expert nutritionist answering questions about fruits. Always cite the source doc when possible. If you don't know, say so.",
   "tools": [
     {
